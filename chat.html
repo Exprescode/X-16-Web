@@ -4,12 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <title>X-16 chat</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:thin,light,regular,medium,bold,black&display=swap">
+    <link rel="stylesheet" href="css/chat.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js" defer></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js" defer></script>
+    <script src="js/chat.js" defer></script>
 </head>
 
 <body>
-    <div class="left">
-        <div class="chat_list">
+    <div id="left_panel">
+        <div id="chat_list">
             <div class="entry">
                 <div class="profile profile_red">H</div>
                 <div class="content">
@@ -20,183 +24,22 @@
                     <div class="badge">1</div>
                 </div>
             </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="profile profile_red">H</div>
-                <div class="content">
-                    <div class="name">Henry</div>
-                    <div class="message">Sup Bro!</div>
-                </div>
-                <div class="counter">
-                    <div class="badge">1</div>
-                </div>
-            </div>
-
         </div>
-        <div class="toolbar">
-            <button class="center menu"><img src="img/menu.png"></button>
-            <div class="search center">
+        <div id="toolbar">
+            <button class="menu"><img src="img/menu.png"></button>
+            <div class="search">
                 <input type="text" placeholder="Search">
-                <button class="center"><img src="img/cross.png"></button>
+                <button><img src="img/cross.png"></button>
             </div>
         </div>
-        <div class="drawer">
+        <div id="drawer">
             <button><img src="img/cross_2.png">Close</button>
             <button><img src="img/door.png">Logout</button>
             <button><img src="img/gear.png">Settings</button>
             <button><img src="img/plus.png">New Chat</button>
         </div>
-        <div class="drawer drawer_new_chat">
-            <div class="people_list">
+        <div id="drawer_new_chat">
+            <div id="people_list">
                 <div class="entry">
                     <div class="profile profile_red">H</div>
                     <div class="content">
@@ -204,15 +47,14 @@
                         <div class="email">henry@sample.com</div>
                     </div>
                 </div>
-
             </div>
-            <div class="search"><input type="text" placeholder="Search"><button><img src="img/cross.png"></button></div>
-            <div class="counter"><span>0</span> Selected</div>
+            <div id="search"><input type="text" placeholder="Search"><button><img src="img/cross.png"></button></div>
+            <div id="counter"><span>0</span> Selected</div>
             <button><img src="img/plus.png">Create</button>
             <button><img src="img/cross_2.png">Cancel</button>
         </div>
-        <div class="drawer_settings">
-            <div class="people_list">
+        <div id="drawer_settings">
+            <div id="people_list">
                 <div class="entry">
                     <div class="profile profile_red">H</div>
                     <div class="content">
@@ -220,113 +62,22 @@
                         <div class="email">henry@sample.com</div>
                     </div>
                 </div>
-                <!-- <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div> -->
             </div>
-            <div class="group_name">
-                <div class="label">Chat Name</div>
+            <div id="group_name">
+                <div id="label">Chat Name</div>
                 <input type="text" value="New Group">
             </div>
-            <div class="user">
-                <div class="profile">
-                    <div class="preview profile_blue">S</div>
-                    <button class="edit">EDIT</button>
+            <div id="user">
+                <div id="profile">
+                    <div class="profile_blue" id="preview">S</div>
+                    <button>EDIT</button>
                 </div>
-                <div class="identity">
-                    <div class="name">
+                <div id="identity">
+                    <div id="name">
                         <div class="label">Name</div>
                         <input type="text" value="Sam">
                     </div>
-                    <div class="password">
+                    <div id="password">
                         <div class="label">Password</div>
                         <input type="password" placeholder="New Password">
                     </div>
@@ -336,10 +87,10 @@
             <button class="tick_cross"><img src="img/cross_2.png">Cancel</button>
         </div>
     </div>
-    <div class="right">
-        <div class="header">Henry</div>
-        <div class="chat">
-            <div class="entry">
+    <div id="right_panel">
+        <div id="header">Henry</div>
+        <div id="chat">
+            <div id="entry">
                 <div class="bubble">
                     <div class="author">Henry</div>
                     <div class="message">hi</div>
@@ -494,13 +245,13 @@
                 </div>
             </div> -->
         </div>
-        <div class="compose">
-            <div class="textbox">
+        <div id="compose">
+            <div id="textbox">
                 <input type="text" placeholder="Compose message here.">
-                <button class="center"><img src="img/cross.png"></button>
+                <button><img src="img/cross.png"></button>
             </div>
-            <button class="search"><img src="img/magnifying_glass.png"></button>
-            <button class="send">SEND</button>
+            <button id="search"><img src="img/magnifying_glass.png"></button>
+            <button id="send">SEND</button>
         </div>
     </div>
 </body>
