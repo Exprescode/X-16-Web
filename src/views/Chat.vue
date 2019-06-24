@@ -47,11 +47,12 @@
 <script>
 import ChatListEntry from "@/components/ChatListEntry.vue";
 import ChatEntry from "@/components/ChatEntry.vue";
-import {
-  CHATS_QUERY,
-  SEND_MESSAGE_MUTATION,
-  MESSAGE_SENT_SUBSCRIPTION
-} from "@/graphql";
+// import {
+//   CHATS_QUERY,
+//   SEND_MESSAGE_MUTATION,
+//   MESSAGE_SENT_SUBSCRIPTION
+// } from "@/graphql";
+import { GET_INDIVIDUAL_CHATS } from "@/graphql";
 export default {
   name: "Chat",
   components: {
@@ -59,114 +60,37 @@ export default {
     ChatEntry
   },
   created() {
-    //TODO: get all chat entries
+    if (!window.sessionStorage.getItem("master_email")) {
+      this.$router.replace({
+        name: "Login"
+      });
+    }
   },
   data() {
     return {
-      master: {
-        id: 222,
-        name: "Sam",
-        email: "sam@sample.com",
-        profile: null
-      },
-      users: [
-        {
-          id: 5,
-          name: "Tom",
-          email: "tom@sample.com",
-          profile: null
-        },
-        {
-          id: 1,
-          name: "Henry",
-          email: "tom@sample.com",
-          profile: null
-        },
-        {
-          id: 2,
-          name: "Jodi",
-          email: "tom@sample.com",
-          profile: null
-        },
-        {
-          id: 3,
-          name: "Joyce",
-          email: "tom@sample.com",
-          profile: null
-        },
-        {
-          id: 4,
-          name: "Tim",
-          email: "tom@sample.com",
-          profile: null
-        }
-      ],
-      chats: [
-        {
-          id: 0,
-          name: "Tom",
-          last_read: 3,
-          group: false,
-          authors: [
-            {
-              id: 5,
-              name: "Tom"
-            }
-          ],
-          converse: [
-            {
-              id: 1,
-              author: 5,
-              text:
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-              time: 1561299674408
-            },
-            {
-              id: 2,
-              author: 0,
-              text:
-                "Lectus sit amet est placerat in egestas erat imperdiet sed.",
-              time: 1561299745127
-            },
-            {
-              id: 3,
-              author: 0,
-              text:
-                "Lectus sit amet est placerat in egestas erat imperdiet sed.",
-              time: 1561300382492
-            },
-            {
-              id: 4,
-              author: 0,
-              text:
-                "Est velit egestas dui id ornare. Vitae semper quis lectus nulla.",
-              time: 1561299745127
-            },
-            {
-              id: 5,
-              author: 0,
-              text:
-                "Aliquet sagittis id consectetur purus ut faucibus pulvinar elementum integer.",
-              time: 1561299745127
-            }
-          ]
-        }
-      ],
+      master: "",
+      users: "",
+      GetIndividualChats: "",
       message: "",
       active_chat: null
     };
   },
   apollo: {
-    chats_a: {
-      query: CHATS_QUERY,
-      subscribeToMore: {
-        document: MESSAGE_SENT_SUBSCRIPTION,
-        updateQuery: (previousData, { subscriptionData }) => {
-          return {
-            chats: [...previousData.chats, subscriptionData.data.messageSent]
-          };
-        }
+    GetIndividualChats: {
+      query: GET_INDIVIDUAL_CHATS,
+      variables() {
+        return {
+          email: window.sessionStorage.getItem("master_email")
+        };
       }
+      // subscribeToMore: {
+      //   document: MESSAGE_SENT_SUBSCRIPTION,
+      //   updateQuery: (previousData, { subscriptionData }) => {
+      //     return {
+      //       chats: [...previousData.chats, subscriptionData.data.messageSent]
+      //     };
+      //   }
+      // }
     }
   },
   methods: {
@@ -176,19 +100,19 @@ export default {
     },
     setActiveChat(chat) {
       this.active_chat = chat;
-    },
-    async sendMessage() {
-      const message = this.message;
-      this.message = "";
-
-      await this.$apollo.mutate({
-        mutation: SEND_MESSAGE_MUTATION,
-        variables: {
-          from: this.username,
-          message
-        }
-      });
     }
+    // async sendMessage() {
+    //   const message = this.message;
+    //   this.message = "";
+
+    //   await this.$apollo.mutate({
+    //     mutation: SEND_MESSAGE_MUTATION,
+    //     variables: {
+    //       from: this.username,
+    //       message
+    //     }
+    //   });
+    // }
   }
 };
 </script>

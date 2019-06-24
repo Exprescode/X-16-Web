@@ -1,12 +1,11 @@
 <template>
-  <div id="form">
+  <form id="form">
     <div id="title">
       <router-link to="/" replace>
         <a>X-16</a>
       </router-link>
     </div>
     <div id="subtitle">A new experience awaits!</div>
-    <!-- <div id="subtitle error">Email already exist!</div> -->
     <div class="error" v-if="connection_error">Something went wrong. Please try again later.</div>
     <div class="error" v-if="email_error">
       Email already exist!
@@ -20,20 +19,20 @@
     </div>
     <div class="group">
       <div class="label">EMAIL</div>
-      <input type="email" spellcheck="false" v-model="email">
+      <input type="email" spellcheck="false" v-model="email" autocomplete="email" required>
     </div>
     <div class="group">
       <div class="label">PASSWORD</div>
-      <input type="password" v-model="password">
+      <input type="password" v-model="password" autocomplete="password" required>
     </div>
     <div class="group">
-      <button v-on:click="register">REGISTER</button>
+      <button v-on:click="addUser">REGISTER</button>
     </div>
-  </div>
+  </form>
 </template>
 
 <script>
-import axios from "axios";
+import { ADD_USER } from "@/graphql";
 export default {
   name: "Register",
   data() {
@@ -46,34 +45,36 @@ export default {
     };
   },
   methods: {
-    register() {
+    addUser() {
       this.email_error = false;
       this.connection_error = false;
-      axios
-        .post("http://45.79.78.80/query", {
-          query:
-            'mutation {SignUpUser(email:"' +
-            this.email +
-            '" name:"' +
-            this.name +
-            '" password:"' +
-            this.password +
-            '")}'
-        })
-        .then(response => {
-          // console.log(response);
-          if (response.data.data) {
-            //Sign up successful.
-            this.$router.replace("/");
-          } else {
-            //Sign up failed.
-            this.email_error = true;
+      const email = this.email;
+      const name = this.name;
+      const password = this.password;
+      this.$apollo
+        .mutate({
+          mutation: ADD_USER,
+          variables: {
+            email: email,
+            name: name,
+            password: password
           }
+        })
+        .then(data => {
+          // eslint-disable-next-line
+          console.log(data);
+          this.$router.replace({
+            name: "Login",
+            params: {
+              message: "Success! Please verify your account via email.",
+              message_style: "message positive"
+            }
+          });
         })
         .catch(error => {
           // eslint-disable-next-line
           console.log(error);
-          this.connection_error = true;
+          this.email_error = true;
         });
     }
   }
