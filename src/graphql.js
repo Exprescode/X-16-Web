@@ -1,11 +1,38 @@
 import gql from "graphql-tag";
 
-export const CHATS_QUERY = gql`
-  query ChatsQuery {
-    chats {
+export const GET_USER = gql`
+  query($email: String!, $password: String!) {
+    GetUser(email: $email, password: $password)
+  }
+`;
+
+export const ADD_USER = gql`
+  mutation($email: String!, $name: String!, $password: String!) {
+    SignUpUser(email: $email, name: $name, password: $password)
+  }
+`;
+
+export const GET_INDIVIDUAL_CHATS = gql`
+  query($email: String!) {
+    GetIndividualChats(email: $email) {
       id
-      from
-      message
+      members {
+        id
+        email
+        name
+      }
+      messages {
+        id
+        chatType
+        chatId
+        sender {
+          id
+          email
+          name
+        }
+        datetime
+        message
+      }
     }
   }
 `;

@@ -1,18 +1,18 @@
 <template>
-  <div id="form">
+  <form id="form">
     <div id="title">X-16</div>
     <div id="subtitle">Fueled up and ready to fly!</div>
-    <div v-bind:class="message_style" v-if="message">{{message}}</div>
+    <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
-      <div class="label">EMAIL</div>
-      <input type="email" spellcheck="false" v-model="email">
+      <div class="label" autocomplete>EMAIL</div>
+      <input type="email" spellcheck="false" v-model="email" autocomplete="email" required>
     </div>
     <div class="group">
       <div class="label">PASSWORD</div>
-      <input type="password" v-model="password">
+      <input type="password" v-model="password" autocomplete="password" required>
     </div>
     <div class="group">
-      <button v-on:click="authenticate">LOGIN</button>
+      <button v-on:click="getUser">LOGIN</button>
       <div id="links">
         <div>
           Need an account?
@@ -28,37 +28,40 @@
         </div>
       </div>
     </div>
-  </div>
+  </form>
 </template>
 
 <script>
-import axios from "axios";
+import { GET_USER } from "@/graphql";
 export default {
   name: "Login",
+  props: ["message", "message_style"],
   data() {
     return {
       email: "",
       password: "",
-      message: "",
-      message_style: ""
+      active_message: this.message,
+      active_message_style: this.message_style
     };
   },
   methods: {
-    authenticate() {
-      axios
-        .get("http://45.79.78.80/query", {
-          params: {
-            query:
-              'query {GetUser(email:"' +
-              this.email +
-              '" password:"' +
-              this.password +
-              '")}'
+    getUser() {
+      const email = this.email;
+      const password = this.password;
+      this.$apollo
+        .query({
+          query: GET_USER,
+          variables: {
+            email: email,
+            password: password
           }
         })
-        .then(response => {
-          if (response.data.data.GetUser === "User retrieved.") {
+        .then(data => {
+          // eslint-disable-next-line
+          console.log(data);
+          if (data.data.GetUser === "User retrieved.") {
             this.$router.replace("/chat");
+            window.sessionStorage.setItem("master_email", this.email);
           } else {
             this.setMessage("Invalid email or password!", "message negative");
           }
@@ -66,15 +69,16 @@ export default {
         .catch(error => {
           // eslint-disable-next-line
           console.log(error);
-          this.setMessage(
-            "Something went wrong. Please try again later.",
-            "message negative"
-          );
+          this.setMessage("Invalid email or password!", "message negative");
+          // this.setMessage(
+          //   "Something went wrong. Please try again later.",
+          //   "message negative"
+          // );
         });
     },
-    setMessage(msg, msg_style) {
-      this.message = msg;
-      this.message_style = msg_style;
+    setMessage(message, message_style) {
+      this.active_message = message;
+      this.active_message_style = message_style;
     }
   }
 };

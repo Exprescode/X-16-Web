@@ -2,11 +2,7 @@
   <div id="container">
     <div id="left_panel">
       <div id="chat_list">
-        <ChatListEntry
-          v-for="entry in chat_list"
-          v-bind:chat_list_entry="entry"
-          v-bind:key="entry.id"
-        />
+        <ChatListEntry v-for="chat in chats" v-bind:chat="chat" v-bind:key="chat.id"/>
       </div>
       <div id="toolbar">
         <button class="menu">
@@ -19,315 +15,104 @@
           </button>
         </div>
       </div>
-      <!-- <div id="drawer">
-            <button><img src="../assets/cross_2.png">Close</button>
-            <button><img src="../assets/door.png">Logout</button>
-            <button><img src="../assets/gear.png">Settings</button>
-            <button><img src="../assets/plus.png">New Chat</button>
-      </div>-->
-      <!-- <div id="drawer_new_chat">
-            <div id="people_list">
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-            </div>
-            <div id="search"><input type="text" placeholder="Search"><button><img src="../assets/cross.png"></button></div>
-            <div id="counter"><span>0</span> Selected</div>
-            <button><img src="../assets/plus.png">Create</button>
-            <button><img src="../assets/cross_2.png">Cancel</button>
-      </div>-->
-      <!-- <div id="drawer_settings">
-            <div id="people_list">
-                <div class="entry">
-                    <div class="profile profile_red">H</div>
-                    <div class="content">
-                        <div class="name">Henry</div>
-                        <div class="email">henry@sample.com</div>
-                    </div>
-                </div>
-            </div>
-            <div id="group_name">
-                <div id="label">Chat Name</div>
-                <input type="text" value="New Group">
-            </div>
-            <div id="user">
-                <div id="profile">
-                    <div class="profile_blue" id="preview">S</div>
-                    <button>EDIT</button>
-                </div>
-                <div id="identity">
-                    <div id="name">
-                        <div class="label">Name</div>
-                        <input type="text" value="Sam">
-                    </div>
-                    <div id="password">
-                        <div class="label">Password</div>
-                        <input type="password" placeholder="New Password">
-                    </div>
-                </div>
-            </div>
-            <button class="tick_cross"><img src="../assets/tick.png">Done</button>
-            <button class="tick_cross"><img src="../assets/cross_2.png">Cancel</button>
-      </div>-->
     </div>
     <div id="right_panel">
-      <div id="header">Henry</div>
-      <div id="chat">
-        <div id="entry">
-          <div class="bubble">
-            <div class="author">Henry</div>
-            <div class="message">hi</div>
-          </div>
-          <div class="meta">
-            <div class="status">Delivered</div>
-            <div class="timestamp">23.05.2019 18:14</div>
-          </div>
+      <div id="chat" v-if="active_chat">
+        <div id="header">{{active_chat.name}}</div>
+        <div id="converse">
+          <ChatEntry
+            v-for="entry in active_chat.converse"
+            v-bind:converse="entry"
+            v-bind:key="entry.id"
+          />
         </div>
-        <!-- <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-            </div>
-            <div class="entry">
-                <div class="bubble">
-                    <div class="author">Henry</div>
-                    <div class="message">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla eleifend luctus
-                        mollis. Pellentesque convallis quam at finibus maximus. Integer nisl sapien, pretium id diam
-                        vitae, congue sagittis neque. Curabitur vestibulum, nisi vel tristique viverra, eros libero
-                        fringilla lacus, vitae dictum tortor sapien nec sem. Vestibulum finibus bibendum mi, ac viverra
-                        massa finibus sit amet. Aliquam dapibus finibus convallis. Integer sit amet lacinia enim. Morbi
-                        tincidunt pharetra scelerisque. Curabitur imperdiet, sapien non malesuada rhoncus, metus lacus
-                        blandit lorem, a vulputate dolor sapien pellentesque erat. Etiam euismod rutrum elementum.
-                        Donec aliquet elementum elit, ac pellentesque purus interdum in. Sed quis mi mauris. Sed at
-                        tempus urna. Quisque tristique dapibus est id dictum.</div>
-                </div>
-                <div class="meta">
-                    <div class="status">Delivered</div>
-                    <div class="timestamp">23.05.2019 18:14</div>
-                </div>
-        </div>-->
-      </div>
-      <div id="compose">
-        <div id="textbox">
-          <input type="text" placeholder="Compose message here.">
-          <button>
-            <img src="../assets/cross.png">
+        <div id="compose">
+          <div id="textbox">
+            <input type="text" placeholder="Compose message here." v-model="message">
+            <button v-show="message">
+              <img src="../assets/cross.png">
+            </button>
+          </div>
+          <button id="search">
+            <img src="../assets/magnifying_glass.png">
           </button>
+          <button id="send">SEND</button>
         </div>
-        <button id="search">
-          <img src="../assets/magnifying_glass.png">
-        </button>
-        <button id="send">SEND</button>
       </div>
+      <div id="placeholder" v-else>Please select a chat.</div>
     </div>
   </div>
 </template>
 
 <script>
 import ChatListEntry from "@/components/ChatListEntry.vue";
-import {
-  CHATS_QUERY,
-  SEND_MESSAGE_MUTATION,
-  MESSAGE_SENT_SUBSCRIPTION
-} from "@/graphql";
+import ChatEntry from "@/components/ChatEntry.vue";
+// import {
+//   CHATS_QUERY,
+//   SEND_MESSAGE_MUTATION,
+//   MESSAGE_SENT_SUBSCRIPTION
+// } from "@/graphql";
+import { GET_INDIVIDUAL_CHATS } from "@/graphql";
 export default {
   name: "Chat",
   components: {
-    ChatListEntry
+    ChatListEntry,
+    ChatEntry
+  },
+  created() {
+    if (!window.sessionStorage.getItem("master_email")) {
+      this.$router.replace({
+        name: "Login"
+      });
+    }
   },
   data() {
     return {
-      chat_list: [
-        {
-          id: "000000",
-          name: "Tom",
-          msg: "Dinner tonight??..........................................",
-          count: 1,
-          group: false
-        },
-        {
-          id: "000001",
-          name: "Henry",
-          msg:
-            "Dinner tonight?.........................................................",
-          count: 0,
-          group: false
-        },
-        {
-          id: "000002",
-          name: "Jodi",
-          msg: "Dinner tonight?",
-          count: 0,
-          group: false
-        },
-        {
-          id: "000003",
-          name: "Joyce",
-          msg: "Dinner tonight?",
-          count: 0,
-          group: false
-        },
-        {
-          id: "000004",
-          name: "Raid Party",
-          msg: "Dinner tonight?",
-          count: 0,
-          group: true
-        }
-      ]
+      master: "",
+      users: "",
+      GetIndividualChats: "",
+      message: "",
+      active_chat: null
     };
   },
   apollo: {
-    chats: {
-      query: CHATS_QUERY,
-      subscribeToMore: {
-        document: MESSAGE_SENT_SUBSCRIPTION,
-        updateQuery: (previousData, { subscriptionData }) => {
-          return {
-            chats: [...previousData.chats, subscriptionData.data.messageSent]
-          };
-        }
+    GetIndividualChats: {
+      query: GET_INDIVIDUAL_CHATS,
+      variables() {
+        return {
+          email: window.sessionStorage.getItem("master_email")
+        };
       }
+      // subscribeToMore: {
+      //   document: MESSAGE_SENT_SUBSCRIPTION,
+      //   updateQuery: (previousData, { subscriptionData }) => {
+      //     return {
+      //       chats: [...previousData.chats, subscriptionData.data.messageSent]
+      //     };
+      //   }
+      // }
     }
   },
   methods: {
-    async sendMessage() {
-      const message = this.message;
-      this.message = "";
-
-      await this.$apollo.mutate({
-        mutation: SEND_MESSAGE_MUTATION,
-        variables: {
-          from: this.username,
-          message
-        }
-      });
+    test() {
+      // eslint-disable-next-line
+      console.log("pass");
+    },
+    setActiveChat(chat) {
+      this.active_chat = chat;
     }
+    // async sendMessage() {
+    //   const message = this.message;
+    //   this.message = "";
+
+    //   await this.$apollo.mutate({
+    //     mutation: SEND_MESSAGE_MUTATION,
+    //     variables: {
+    //       from: this.username,
+    //       message
+    //     }
+    //   });
+    // }
   }
 };
 </script>
@@ -363,8 +148,6 @@ export default {
 }
 
 #left_panel #chat_list .entry {
-  background-color: transparent;
-
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -441,7 +224,6 @@ export default {
   flex-direction: row;
   align-items: flex-end;
   height: 40px;
-  min-width: 21px;
   background-color: transparent;
   margin: 0 0 0 8px;
 }
@@ -738,9 +520,6 @@ export default {
   margin: 0px;
 }
 
-#drawer_settings #group_name input {
-}
-
 #drawer_settings #user {
   background-color: transparent;
   display: flex;
@@ -788,9 +567,6 @@ export default {
 #drawer_settings #user #identity {
   margin: 0 0 0 12px;
   padding: 0;
-}
-
-#drawer_settings #user #identity #name {
 }
 
 #drawer_settings #user #identity #password {
@@ -850,11 +626,18 @@ export default {
   margin: 0;
   flex: auto;
   background-color: transparent;
+}
+
+#chat {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-flow: column nowrap;
 }
 
-#right_panel #header {
+#right_panel #chat #header {
   background-color: white;
   width: 100%;
   padding: 16px;
@@ -870,7 +653,7 @@ export default {
   z-index: 2;
 }
 
-#right_panel #chat {
+#right_panel #chat #converse {
   width: 100%;
   flex: auto;
   box-sizing: border-box;
@@ -879,7 +662,7 @@ export default {
   overflow-y: auto;
 }
 
-#right_panel #chat #entry {
+#right_panel #chat #converse #entry {
   margin: 0;
   padding: 0;
   background-color: transparent;
@@ -890,7 +673,7 @@ export default {
   justify-content: flex-start;
 }
 
-#right_panel #chat #entry .bubble {
+#right_panel #chat #converse #entry .bubble {
   background-color: white;
   border-radius: 8px;
   padding: 8px 12px 8px 8px;
@@ -899,28 +682,28 @@ export default {
   align-items: flex-start;
 }
 
-#right_panel #chat #entry .author {
+#right_panel #chat #converse #entry .author {
   font-family: "Roboto", sans-serif;
   color: #404040;
   margin: 0;
   padding: 0 0 4px 0;
 }
 
-#right_panel #chat #entry .message {
+#right_panel #chat #converse #entry .message {
   font-family: "Roboto Light", sans-serif;
   color: #404040;
   margin: 0;
   padding: 0;
 }
 
-#right_panel #chat #entry .meta {
+#right_panel #chat #converse #entry .meta {
   padding: 0;
   margin: 0 0 0 4px;
   color: white;
   font-family: "Roboto Light", sans-serif;
 }
 
-#right_panel #compose {
+#right_panel #chat #compose {
   width: 100%;
   background-color: white;
   padding: 8px 12px 8px 12px;
@@ -936,7 +719,7 @@ export default {
   z-index: 2;
 }
 
-#right_panel #compose #textbox {
+#right_panel #chat #compose #textbox {
   min-width: 256px;
   padding: 8px;
   box-sizing: border-box;
@@ -947,7 +730,7 @@ export default {
   align-items: center;
 }
 
-#right_panel #compose #textbox input {
+#right_panel #chat #compose #textbox input {
   min-width: 1%;
   padding: 0;
   border-style: none;
@@ -958,7 +741,7 @@ export default {
   flex: auto;
 }
 
-#right_panel #compose #textbox button {
+#right_panel #chat #compose #textbox button {
   margin: 0 0 0 8px;
   padding: 0;
   border-style: none;
@@ -967,14 +750,14 @@ export default {
   width: 12px;
 }
 
-#right_panel #compose #textbox img {
+#right_panel #chat #compose #textbox img {
   width: 100%;
   height: auto;
   padding: 0;
   margin: 0;
 }
 
-#right_panel #compose #search {
+#right_panel #chat #compose #search {
   width: 28px;
   height: 28px;
   padding: 7px;
@@ -985,12 +768,12 @@ export default {
   box-sizing: border-box;
 }
 
-#right_panel #compose #search img {
+#right_panel #chat #compose #search img {
   width: 100%;
   height: auto;
 }
 
-#right_panel #compose #send {
+#right_panel #chat #compose #send {
   border-style: none;
   background-color: #3c95ff;
   border-radius: 14px;
@@ -1003,8 +786,18 @@ export default {
   margin: 0 0 0 8px;
 }
 
-#right_panel #compose #search:hover,
-#right_panel #compose #send:hover {
+#right_panel #chat #compose #search:hover,
+#right_panel #chat #compose #send:hover {
   background-color: #3c95ffe5;
+}
+
+#right_panel #placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: "Roboto", sans-serif;
 }
 </style>
