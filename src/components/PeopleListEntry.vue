@@ -1,5 +1,5 @@
 <template>
-  <div class="entry" v-on:click="selected">
+  <div class="entry" v-on:click="select">
     <div class="profile profile_red">{{initial}}</div>
     <div class="content">
       <div class="name">{{user.name}}</div>
@@ -17,9 +17,20 @@ export default {
       return this.user.name.charAt(0).toUpperCase();
     }
   },
+  data() {
+    return {
+      selected: this.$parent.isSelectedUser()
+    };
+  },
   methods: {
-    selected() {
-      this.$parent.selectUser(this.user.email);
+    select() {
+      if (this.selected) {
+        this.$parent.removeUser(this.user.email);
+        this.selected = false;
+      } else {
+        this.$parent.addUser(this.user.email);
+        this.selected = true;
+      }
     }
   }
 };

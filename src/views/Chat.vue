@@ -35,14 +35,14 @@
         </div>
         <div id="search">
           <input type="text" placeholder="Search" v-model="search_users">
-          <button v-on:click="search_users = ''">
+          <button v-on:click="clearUsers">
             <img src="../assets/cross.png" v-show="search_users">
           </button>
         </div>
         <div id="counter">
           <span>{{selected_users.length}}</span> Selected
         </div>
-        <button v-on:click="createChat">
+        <button v-on:click="createChat" v-bind:disabled="selected_users.length < 1">
           <img src="../assets/plus.png">Create
         </button>
         <button v-on:click="cancelCreateChat">
@@ -62,7 +62,13 @@
         </div>
         <div id="compose">
           <div id="textbox">
-            <input type="text" placeholder="Compose message here." v-model="message">
+            <input
+              type="text"
+              placeholder="Compose message here."
+              v-model="message"
+              v-on:keyup.enter="sendMessage"
+              spellcheck="false"
+            >
             <button v-show="search_chat && message" v-on:click="clearSearchChat">
               <img src="../assets/cross.png">
             </button>
@@ -147,8 +153,17 @@ export default {
           };
         },
         updateQuery: (previousResult, { subscriptionData }) => {
+          // eslint-disable-next-line
+          console.log(previousResult);
+          // eslint-disable-next-line
+          console.log("yay");
+          // eslint-disable-next-line
+          console.log(subscriptionData);
           return {
-            GetIndividualChats: [...previousResult, subscriptionData]
+            GetIndividualChats: [
+              ...previousResult.GetIndividualChats,
+              subscriptionData.data.IndividualChatCreated
+            ]
           };
         }
       }
@@ -175,6 +190,9 @@ export default {
       this.$router.replace("/");
     },
     getUsers() {
+      if (!this.search_users) {
+        return;
+      }
       this.$apollo
         .query({
           query: GET_USERS,
@@ -192,11 +210,20 @@ export default {
           console.log(error);
         });
     },
-    selectUser(email) {
+    isSelectedUser(email) {
+      return this.selected_users.indexOf(email) > -1;
+    },
+    addUser(email) {
       this.selected_users.push(email);
     },
+    removeUser(email) {
+      var i = this.selected_users.indexOf(email);
+      if (i > -1) {
+        this.selected_users.splice(i, 1);
+      }
+    },
     clearUsers() {
-      this.selected_users = "";
+      this.selected_users = [];
       this.search_users = "";
       this.users = "";
     },
@@ -226,6 +253,7 @@ export default {
           // eslint-disable-next-line
           console.log(error);
         });
+      this.clearUsers();
     },
     clearSearchChatList() {
       this.search_chat_list = "";
@@ -235,6 +263,9 @@ export default {
       this.message = "";
     },
     sendMessage() {
+      if (!this.message) {
+        return;
+      }
       const message = this.message;
       this.message = "";
       this.$apollo
