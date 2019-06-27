@@ -867,24 +867,30 @@ export default {
 }
 
 #right_panel #chat #converse #entry .bubble {
-  background-color: white;
   border-radius: 8px;
   padding: 8px 12px 8px 8px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  color: #404040;
+}
+
+#right_panel #chat #converse #entry .bubble_white {
+  background-color: white;
+}
+
+#right_panel #chat #converse #entry .bubble_green {
+  background-color: #b3efc7;
 }
 
 #right_panel #chat #converse #entry .author {
   font-family: "Roboto", sans-serif;
-  color: #404040;
   margin: 0;
   padding: 0 0 4px 0;
 }
 
 #right_panel #chat #converse #entry .message {
   font-family: "Roboto Light", sans-serif;
-  color: #404040;
   margin: 0;
   padding: 0;
 }
