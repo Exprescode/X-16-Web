@@ -1,12 +1,12 @@
 <template>
   <div id="entry">
     <div class="bubble">
-      <div class="author">Henry</div>
-      <div class="message">{{converse.text}}</div>
+      <div class="author">{{converse.sender.name}}</div>
+      <div class="message">{{converse.message}}</div>
     </div>
     <div class="meta">
       <!-- <div class="status">Delivered</div> -->
-      <div class="timestamp">{{formatTime(converse.time)}}</div>
+      <div class="timestamp">{{timestamp}}</div>
     </div>
   </div>
 </template>
@@ -15,10 +15,9 @@
 export default {
   name: "ChatEntry",
   props: ["converse"],
-  data() {},
-  methods: {
-    formatTime(time) {
-      var date = new Date(time);
+  computed: {
+    timestamp: function() {
+      var date = new Date(this.converse.datetime);
       return (
         date.getDate() +
         "." +

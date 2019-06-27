@@ -2,18 +2,52 @@
   <div id="container">
     <div id="left_panel">
       <div id="chat_list">
-        <ChatListEntry v-for="chat in chats" v-bind:chat="chat" v-bind:key="chat.id"/>
+        <ChatListEntry v-for="chat in GetIndividualChats" v-bind:chat="chat" v-bind:key="chat.id"/>
       </div>
       <div id="toolbar">
-        <button class="menu">
+        <button class="menu" v-on:click="setDrawerState('lobby')">
           <img src="../assets/menu.png">
         </button>
         <div class="search">
-          <input type="text" placeholder="Search">
-          <button>
+          <input type="text" placeholder="Search" v-model="search_chat_list">
+          <button v-show="search_chat_list" v-on:click="clearSearchChatList">
             <img src="../assets/cross.png">
           </button>
         </div>
+      </div>
+      <div id="drawer" v-show="drawer_state === 'lobby'">
+        <button v-on:click="setDrawerState('')">
+          <img src="../assets/cross_2.png">Close
+        </button>
+        <button v-on:click="logoutUser">
+          <img src="../assets/door.png">Logout
+        </button>
+        <button>
+          <img src="../assets/gear.png">Settings
+        </button>
+        <button v-on:click="setDrawerState('add-chat')">
+          <img src="../assets/plus.png">New Chat
+        </button>
+      </div>
+      <div id="drawer_new_chat" v-show="drawer_state === 'add-chat'">
+        <div id="people_list">
+          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id"/>
+        </div>
+        <div id="search">
+          <input type="text" placeholder="Search" v-model="search_users">
+          <button v-on:click="search_users = ''">
+            <img src="../assets/cross.png" v-show="search_users">
+          </button>
+        </div>
+        <div id="counter">
+          <span>{{selected_users.length}}</span> Selected
+        </div>
+        <button v-on:click="createChat">
+          <img src="../assets/plus.png">Create
+        </button>
+        <button v-on:click="cancelCreateChat">
+          <img src="../assets/cross_2.png">Cancel
+        </button>
       </div>
     </div>
     <div id="right_panel">
@@ -21,7 +55,7 @@
         <div id="header">{{active_chat.name}}</div>
         <div id="converse">
           <ChatEntry
-            v-for="entry in active_chat.converse"
+            v-for="entry in active_chat.messages"
             v-bind:converse="entry"
             v-bind:key="entry.id"
           />
@@ -29,14 +63,14 @@
         <div id="compose">
           <div id="textbox">
             <input type="text" placeholder="Compose message here." v-model="message">
-            <button v-show="message">
+            <button v-show="search_chat && message" v-on:click="clearSearchChat">
               <img src="../assets/cross.png">
             </button>
           </div>
           <button id="search">
             <img src="../assets/magnifying_glass.png">
           </button>
-          <button id="send">SEND</button>
+          <button v-on:click="sendMessage" id="send">SEND</button>
         </div>
       </div>
       <div id="placeholder" v-else>Please select a chat.</div>
@@ -45,19 +79,28 @@
 </template>
 
 <script>
-import ChatListEntry from "@/components/ChatListEntry.vue";
+import _ from "lodash";
 import ChatEntry from "@/components/ChatEntry.vue";
+import ChatListEntry from "@/components/ChatListEntry.vue";
+import PeopleListEntry from "@/components/PeopleListEntry.vue";
 // import {
 //   CHATS_QUERY,
 //   SEND_MESSAGE_MUTATION,
 //   MESSAGE_SENT_SUBSCRIPTION
 // } from "@/graphql";
-import { GET_INDIVIDUAL_CHATS } from "@/graphql";
+import {
+  GET_INDIVIDUAL_CHATS,
+  INDIVIDUAL_CHAT_SUB,
+  GET_USERS,
+  CREATE_CHAT,
+  SEND_MESSAGE
+} from "@/graphql";
 export default {
   name: "Chat",
   components: {
+    ChatEntry,
     ChatListEntry,
-    ChatEntry
+    PeopleListEntry
   },
   created() {
     if (!window.sessionStorage.getItem("master_email")) {
@@ -65,14 +108,27 @@ export default {
         name: "Login"
       });
     }
+    this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
+  },
+  watch: {
+    search_users: function() {
+      this.debouncedGetUsers();
+      // if (this.search_users.match(/^.+@.+\.+$/)) {
+      // }
+    }
   },
   data() {
     return {
-      master: "",
+      master: window.sessionStorage.getItem("master_email"),
       users: "",
       GetIndividualChats: "",
       message: "",
-      active_chat: null
+      active_chat: null,
+      drawer_state: "",
+      search_users: "",
+      selected_users: [],
+      search_chat_list: "",
+      search_chat: false
     };
   },
   apollo: {
@@ -80,8 +136,21 @@ export default {
       query: GET_INDIVIDUAL_CHATS,
       variables() {
         return {
-          email: window.sessionStorage.getItem("master_email")
+          email: this.master
         };
+      },
+      subscribeToMore: {
+        document: INDIVIDUAL_CHAT_SUB,
+        variables() {
+          return {
+            email: this.master
+          };
+        },
+        updateQuery: (previousResult, { subscriptionData }) => {
+          return {
+            GetIndividualChats: [...previousResult, subscriptionData]
+          };
+        }
       }
       // subscribeToMore: {
       //   document: MESSAGE_SENT_SUBSCRIPTION,
@@ -94,13 +163,106 @@ export default {
     }
   },
   methods: {
-    test() {
-      // eslint-disable-next-line
-      console.log("pass");
-    },
     setActiveChat(chat) {
       this.active_chat = chat;
+      this.setScrollPosition();
+    },
+    setDrawerState(state) {
+      this.drawer_state = state;
+    },
+    logoutUser() {
+      window.sessionStorage.removeItem("master_email");
+      this.$router.replace("/");
+    },
+    getUsers() {
+      this.$apollo
+        .query({
+          query: GET_USERS,
+          variables: {
+            email: this.search_users
+          }
+        })
+        .then(data => {
+          // eslint-disable-next-line
+          console.log(data);
+          this.users = data.data.GetUsers;
+        })
+        .catch(error => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+    },
+    selectUser(email) {
+      this.selected_users.push(email);
+    },
+    clearUsers() {
+      this.selected_users = "";
+      this.search_users = "";
+      this.users = "";
+    },
+    cancelCreateChat() {
+      this.clearUsers();
+      this.drawer_state = "lobby";
+    },
+    createChat() {
+      var chat_name = "";
+      this.$apollo
+        .mutate({
+          mutation: CREATE_CHAT,
+          variables: {
+            creator: this.master,
+            receipient: this.selected_users,
+            name: chat_name
+          }
+        })
+        .then(data => {
+          // eslint-disable-next-line
+          console.log(data.data.CreateChat);
+          if (data.data.CreateChat == "Chat Created") {
+            this.drawer_state = "";
+          }
+        })
+        .catch(error => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+    },
+    clearSearchChatList() {
+      this.search_chat_list = "";
+    },
+    clearSearchChat() {
+      this.search_chat = false;
+      this.message = "";
+    },
+    sendMessage() {
+      const message = this.message;
+      this.message = "";
+      this.$apollo
+        .mutate({
+          mutation: SEND_MESSAGE,
+          variables: {
+            sender: this.master,
+            message: message,
+            individualChatId: this.active_chat.id,
+            groupChatId: ""
+          }
+        })
+        .then(data => {
+          // eslint-disable-next-line
+          console.log(data);
+        })
+        .catch(error => {
+          // eslint-disable-next-line
+          console.log(error);
+        });
+    },
+    setScrollPosition() {
+      setTimeout(function() {
+        var chat_window = document.getElementById("converse");
+        chat_window.scrollTop = chat_window.scrollHeight;
+      }, 1);
     }
+
     // async sendMessage() {
     //   const message = this.message;
     //   this.message = "";
