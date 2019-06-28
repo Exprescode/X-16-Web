@@ -34,7 +34,7 @@
           <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id"/>
         </div>
         <div id="search">
-          <input type="text" placeholder="Search" v-model="search_users">
+          <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
           <button v-on:click="clearUsers">
             <img src="../assets/cross.png" v-show="search_users">
           </button>

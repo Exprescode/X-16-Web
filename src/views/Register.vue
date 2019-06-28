@@ -83,7 +83,7 @@ export default {
           this.$router.replace({
             name: "Login",
             params: {
-              message: "Success! Please verify your account via email.",
+              message: "Success! You now have an account!",
               message_style: "message positive"
             }
           });

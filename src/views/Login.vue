@@ -65,7 +65,6 @@ export default {
         this.setMessage("Invalid email or password!", "message negative");
         return;
       }
-      this.password = "";
       this.$apollo
         .query({
           query: GET_USER,
@@ -88,6 +87,7 @@ export default {
           // eslint-disable-next-line
           console.log(error);
           this.setMessage("Invalid email or password!", "message negative");
+          this.password = "";
           // this.setMessage(
           //   "Something went wrong. Please try again later.",
           //   "message negative"
