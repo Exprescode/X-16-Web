@@ -292,6 +292,12 @@ export default {
         var chat_window = document.getElementById("converse");
         chat_window.scrollTop = chat_window.scrollHeight;
       }, 1);
+    },
+    notifyPopup (fullMessage) {
+      this.$notification.show(fullMessage.sender.name, {
+        body: fullMessage.message,
+        requireInteraction: false,
+      }, {})
     }
 
     // async sendMessage() {

@@ -75,13 +75,16 @@ export default {
         })
         .then(data => {
           // eslint-disable-next-line
-          console.log(data);
-          if (data.data.GetUser === "User retrieved.") {
+          console.log(data.data.GetUser);
             this.$router.replace("/chat");
             window.sessionStorage.setItem("master_email", this.email);
-          } else {
-            this.setMessage("Invalid email or password!", "message negative");
-          }
+            window.sessionStorage.setItem("jwtToken", data.data.GetUser);
+
+          // if (data.data.GetUser === "User retrieved.") {
+          
+          // } else {
+          //   this.setMessage("Invalid email or password!", "message negative");
+          // }
         })
         .catch(error => {
           // eslint-disable-next-line
@@ -97,6 +100,12 @@ export default {
     setMessage(message, message_style) {
       this.active_message = message;
       this.active_message_style = message_style;
+    },
+    notify () {
+      // https://developer.mozilla.org/en-US/docs/Web/API/Notification/Notification#Parameters
+      this.$notification.show('Hello World', {
+        body: 'This is an example!'
+      }, {})
     }
   }
 };
