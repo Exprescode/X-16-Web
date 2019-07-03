@@ -5,11 +5,24 @@
     <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
       <div class="label" autocomplete>EMAIL</div>
-      <input type="email" spellcheck="false" v-model="email" autocomplete="email" required>
+      <input
+        type="email"
+        spellcheck="false"
+        v-on:keyup.enter="getUser"
+        v-model="email"
+        autocomplete="email"
+        required
+      >
     </div>
     <div class="group">
       <div class="label">PASSWORD</div>
-      <input type="password" v-model="password" autocomplete="password" required>
+      <input
+        type="password"
+        v-on:keyup.enter="getUser"
+        v-model="password"
+        autocomplete="password"
+        required
+      >
     </div>
     <div class="group">
       <button v-on:click="getUser">LOGIN</button>
@@ -48,6 +61,10 @@ export default {
     getUser() {
       const email = this.email;
       const password = this.password;
+      if (email === "" || password === "") {
+        this.setMessage("Invalid email or password!", "message negative");
+        return;
+      }
       this.$apollo
         .query({
           query: GET_USER,
@@ -70,6 +87,7 @@ export default {
           // eslint-disable-next-line
           console.log(error);
           this.setMessage("Invalid email or password!", "message negative");
+          this.password = "";
           // this.setMessage(
           //   "Something went wrong. Please try again later.",
           //   "message negative"

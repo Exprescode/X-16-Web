@@ -6,7 +6,8 @@
       </router-link>
     </div>
     <div id="subtitle">A new experience awaits!</div>
-    <div class="error" v-if="connection_error">Something went wrong. Please try again later.</div>
+    <div class="error" v-if="connection_error">Oops! Something went wrong. Please try again later.</div>
+    <div class="error" v-if="password_error">Passwords do not match!</div>
     <div class="error" v-if="email_error">
       Email already exist!
       <router-link to="/reset" replace>
@@ -15,7 +16,7 @@
     </div>
     <div class="group">
       <div class="label">USERNAME</div>
-      <input type="text" spellcheck="false" v-model="name">
+      <input type="text" spellcheck="false" v-model="name" required>
     </div>
     <div class="group">
       <div class="label">EMAIL</div>
@@ -23,7 +24,11 @@
     </div>
     <div class="group">
       <div class="label">PASSWORD</div>
-      <input type="password" v-model="password" autocomplete="password" required>
+      <input type="password" v-model="password" required>
+    </div>
+    <div class="group">
+      <div class="label">CONFIRM PASSWORD</div>
+      <input type="password" v-model="repassword" required>
     </div>
     <div class="group">
       <button v-on:click="addUser">REGISTER</button>
@@ -40,12 +45,24 @@ export default {
       email: "",
       name: "",
       password: "",
+      repassword: "",
       email_error: false,
-      connection_error: false
+      connection_error: false,
+      password_error: false
     };
   },
   methods: {
+    clearError() {
+      this.email_error = false;
+      this.connection_error = false;
+      this.password_error = false;
+    },
     addUser() {
+      this.clearError();
+      if (this.password != this.repassword) {
+        this.password_error = true;
+        return;
+      }
       this.email_error = false;
       this.connection_error = false;
       const email = this.email;
@@ -66,7 +83,7 @@ export default {
           this.$router.replace({
             name: "Login",
             params: {
-              message: "Success! Please verify your account via email.",
+              message: "Success! You now have an account!",
               message_style: "message positive"
             }
           });
