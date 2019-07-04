@@ -227,7 +227,6 @@ export default {
         });
     },
     isSelectedUser(user) {
-      console.log(this.selected_users.indexOf(user) > -1);
       return this.selected_users.indexOf(user) > -1;
     },
     addUser(user) {
