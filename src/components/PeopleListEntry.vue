@@ -39,10 +39,8 @@ export default {
     select() {
       if (this.selected) {
         this.$parent.removeUser(this.user);
-        this.selected = false;
       } else {
         this.$parent.addUser(this.user);
-        this.selected = true;
       }
     }
   }
