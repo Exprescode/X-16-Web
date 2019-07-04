@@ -1,6 +1,6 @@
 <template>
   <div class="entry" v-on:click="selected">
-    <div class="profile profile_red">{{initial}}</div>
+    <div v-bind:class="profile_color">{{initial}}</div>
     <div class="content">
       <div class="name">{{name}}</div>
       <div class="message" v-show="message">{{sender}}: {{message}}</div>
@@ -39,6 +39,18 @@ export default {
         return "";
       }
       return this.chat.messages[this.chat.messages.length - 1].sender.name;
+    },
+    profile_color: function() {
+      var color_index = this.chat.id.charCodeAt(this.chat.id.length - 1) % 6;
+      var colors = [
+        "profile_red",
+        "profile_orange",
+        "profile_green",
+        "profile_blue",
+        "profile_indigo",
+        "profile_violet"
+      ];
+      return "profile " + colors[color_index];
     }
   },
   mounted() {

@@ -1,5 +1,5 @@
 <template>
-  <form id="form">
+  <div id="form">
     <div id="title">
       <router-link to="/" replace>
         <a>X-16</a>
@@ -33,7 +33,7 @@
     <div class="group">
       <button v-on:click="addUser">REGISTER</button>
     </div>
-  </form>
+  </div>
 </template>
 
 <script>

@@ -7,17 +7,17 @@ import { getMainDefinition } from "apollo-utilities";
 import Vue from "vue";
 import VueApollo from "vue-apollo";
 import App from "./App.vue";
-import router from './router'
-import store from './store'
+import router from "./router";
+import store from "./store";
 
 Vue.config.productionTip = false;
 
 const httpLink = new HttpLink({
-  uri: "http://45.79.78.80/query"
+  uri: "https://chat.lukeng.io:80/query "
 });
 
 const wsLink = new WebSocketLink({
-  uri: "ws://45.79.78.80/query",
+  uri: "wss://chat.lukeng.io:80/query",
   options: {
     reconnect: true
   }

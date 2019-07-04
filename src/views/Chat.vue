@@ -35,7 +35,7 @@
         </div>
         <div id="search">
           <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
-          <button v-on:click="clearUsers">
+          <button v-on:click="search_users = ''">
             <img src="../assets/cross.png" v-show="search_users">
           </button>
         </div>
@@ -89,11 +89,6 @@ import _ from "lodash";
 import ChatEntry from "@/components/ChatEntry.vue";
 import ChatListEntry from "@/components/ChatListEntry.vue";
 import PeopleListEntry from "@/components/PeopleListEntry.vue";
-// import {
-//   CHATS_QUERY,
-//   SEND_MESSAGE_MUTATION,
-//   MESSAGE_SENT_SUBSCRIPTION
-// } from "@/graphql";
 import {
   GET_INDIVIDUAL_CHATS,
   INDIVIDUAL_CHAT_SUB,
@@ -126,7 +121,7 @@ export default {
   data() {
     return {
       master: window.sessionStorage.getItem("master_email"),
-      users: "",
+      users: [],
       GetIndividualChats: "",
       message: "",
       active_chat: null,
@@ -153,31 +148,51 @@ export default {
           };
         },
         updateQuery: (previousResult, { subscriptionData }) => {
-          // eslint-disable-next-line
-          console.log(previousResult);
-          // eslint-disable-next-line
-          console.log("yay");
-          // eslint-disable-next-line
-          console.log(subscriptionData);
           return {
             GetIndividualChats: [
-              ...previousResult.GetIndividualChats,
-              subscriptionData.data.IndividualChatCreated
+              subscriptionData.data.IndividualChatCreated,
+              ...previousResult.GetIndividualChats
             ]
           };
         }
       }
-      // subscribeToMore: {
-      //   document: MESSAGE_SENT_SUBSCRIPTION,
-      //   updateQuery: (previousData, { subscriptionData }) => {
-      //     return {
-      //       chats: [...previousData.chats, subscriptionData.data.messageSent]
-      //     };
-      //   }
-      // }
     }
   },
   methods: {
+    sortGetIndividualChats() {
+      this.GetIndividualChats.sort(function(a, b) {
+        var a_is_new_chat = a.messages.length < 1;
+        var b_is_new_chat = a.messages.length < 1;
+        if (a_is_new_chat && !b_is_new_chat) {
+          return true;
+        } else if (!a_is_new_chat && b_is_new_chat) {
+          return false;
+        } else if (a_is_new_chat && b_is_new_chat) {
+          var a_name = "";
+          var b_name = "";
+          for (var i = 0; i < a.members.length; i++) {
+            if (a.members[i].email != this.master) {
+              a_name = a.members[i].name;
+              break;
+            }
+          }
+          for (i = 0; i < b.members.length; i++) {
+            if (b.members[i].email != this.master) {
+              b_name = b.members[i].name;
+              break;
+            }
+          }
+          return a_name < b_name;
+        }
+        var date_a = new Date(
+          a.messages[a.messages.length - 1].datetime
+        ).getTime();
+        var date_b = new Date(
+          b.messages[b.messages.length - 1].datetime
+        ).getTime();
+        return date_a < date_b;
+      });
+    },
     setActiveChat(chat) {
       this.active_chat = chat;
       this.setScrollPosition();
@@ -191,6 +206,7 @@ export default {
     },
     getUsers() {
       if (!this.search_users) {
+        this.users = this.selected_users;
         return;
       }
       this.$apollo
@@ -210,14 +226,15 @@ export default {
           console.log(error);
         });
     },
-    isSelectedUser(email) {
-      return this.selected_users.indexOf(email) > -1;
+    isSelectedUser(user) {
+      console.log(this.selected_users.indexOf(user) > -1);
+      return this.selected_users.indexOf(user) > -1;
     },
-    addUser(email) {
-      this.selected_users.push(email);
+    addUser(user) {
+      this.selected_users.push(user);
     },
-    removeUser(email) {
-      var i = this.selected_users.indexOf(email);
+    removeUser(user) {
+      var i = this.selected_users.indexOf(user);
       if (i > -1) {
         this.selected_users.splice(i, 1);
       }
@@ -225,7 +242,7 @@ export default {
     clearUsers() {
       this.selected_users = [];
       this.search_users = "";
-      this.users = "";
+      this.users = [];
     },
     cancelCreateChat() {
       this.clearUsers();
@@ -233,12 +250,16 @@ export default {
     },
     createChat() {
       var chat_name = "";
+      var receipient = [];
+      for (var i = 0; i < this.selected_users.length; i++) {
+        receipient.push(this.selected_users[i].email);
+      }
       this.$apollo
         .mutate({
           mutation: CREATE_CHAT,
           variables: {
             creator: this.master,
-            receipient: this.selected_users,
+            receipient: receipient,
             name: chat_name
           }
         })
@@ -293,19 +314,6 @@ export default {
         chat_window.scrollTop = chat_window.scrollHeight;
       }, 1);
     }
-
-    // async sendMessage() {
-    //   const message = this.message;
-    //   this.message = "";
-
-    //   await this.$apollo.mutate({
-    //     mutation: SEND_MESSAGE_MUTATION,
-    //     variables: {
-    //       from: this.username,
-    //       message
-    //     }
-    //   });
-    // }
   }
 };
 </script>
@@ -367,16 +375,20 @@ export default {
   flex: none;
 }
 
-.profile_purple {
-  background-color: #a800ff;
+.profile_violet {
+  background-color: #9400d3;
+}
+
+.profile_indigo {
+  background-color: #4b0082;
 }
 
 .profile_blue {
-  background-color: #0079ff;
+  background-color: #0000ff;
 }
 
 .profile_green {
-  background-color: #00f11d;
+  background-color: #00ff00;
 }
 
 .profile_orange {
@@ -384,7 +396,7 @@ export default {
 }
 
 .profile_red {
-  background-color: #ff0900;
+  background-color: #ff0000;
 }
 
 #left_panel #chat_list .entry .content {
@@ -665,6 +677,15 @@ export default {
   font-size: 20px;
   color: white;
   flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#drawer_new_chat #people_list .entry .profile img,
+#drawer_settings #people_list .entry .profile img {
+  width: 50%;
+  height: 50%;
 }
 
 #drawer_new_chat #people_list .entry .content,
