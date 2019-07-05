@@ -2,7 +2,7 @@
   <div id="container">
     <div id="left_panel">
       <div id="chat_list">
-        <ChatListEntry v-for="chat in GetIndividualChats" v-bind:chat="chat" v-bind:key="chat.id"/>
+        <ChatListEntry v-for="chat in chats" v-bind:chat="chat" v-bind:key="chat.id"/>
       </div>
       <div id="toolbar">
         <button class="menu" v-on:click="setDrawerState('lobby')">
@@ -36,8 +36,9 @@
         <div id="search">
           <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
           <button v-on:click="search_users = ''">
-            <img src="../assets/cross.png" v-show="search_users">
+            <img src="../assets/cross.png" v-show="search_users&&!$apollo.loading">
           </button>
+          <div v-show="$apollo.loading" class="loader"></div>
         </div>
         <div id="counter">
           <span>{{selected_users.length}}</span> Selected
@@ -110,6 +111,11 @@ export default {
       });
     }
     this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
+  },
+  computed: {
+    chats: function() {
+      return this.GetIndividualChats;
+    }
   },
   watch: {
     search_users: function() {
@@ -1018,5 +1024,34 @@ export default {
   justify-content: center;
   color: white;
   font-family: "Roboto", sans-serif;
+}
+
+.loader {
+  width: 12px;
+  height: 12px;
+  border: 4px solid white;
+  border-radius: 50%;
+  border-top: 4px solid #3c95ff;
+  -webkit-animation: spin 2s linear infinite; /* Safari */
+  animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>
