@@ -218,7 +218,7 @@ export default {
         })
         .then(data => {
           // eslint-disable-next-line
-          console.log(data);
+          // console.log(data);
           this.users = data.data.GetUsers;
         })
         .catch(error => {
@@ -227,8 +227,6 @@ export default {
         });
     },
     isSelectedUser(user) {
-      // eslint-disable-next-line
-      console.log("lol");
       return this.selected_users.indexOf(user) > -1;
     },
     addUser(user) {
