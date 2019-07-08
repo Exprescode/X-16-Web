@@ -50,6 +50,11 @@ import { GET_USER } from "@/graphql";
 export default {
   name: "Login",
   props: ["message", "message_style"],
+  created() {
+    window.addEventListener('load', function () {
+      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "visible"
+    })
+  },
   data() {
     return {
       email: "",
@@ -79,21 +84,27 @@ export default {
           .then(data => {
             // eslint-disable-next-line
               this.$router.replace("/chat");
+              document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
               window.sessionStorage.setItem("master_email", this.email);
               window.sessionStorage.setItem("jwtToken", data.data.GetUser);
           })
           .catch(error => {
             // eslint-disable-next-line
-            var gqlError = error.graphQLErrors[0].message
+              console.log(error)
+             var gqlError = error.graphQLErrors;
 
-            if (gqlError.includes("Captcha failed")) {
-                this.setMessage("Captcha failed", "message negative");
-            } else if (gqlError.includes("User not verified")) {
-              this.$router.replace("/verify");
-              window.sessionStorage.setItem("verify_email", this.email);
-            }else {
-              this.setMessage("Invalid email or password!", "message negative");
-            }  
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Captcha failed")) {
+                  this.setMessage("Captcha failed", "message negative");
+              } else if (gqlError[0].message.includes("User not verified")) {
+                this.$router.replace("/verify");
+                window.sessionStorage.setItem("verify_email", this.email);
+              }else {
+                this.setMessage("Invalid email or password!", "message negative");
+              }  
+            } else {
+              this.setMessage("An error occured", "message negative");
+            }
             this.password = "";
             // this.setMessage(
             //   "Something went wrong. Please try again later.",
@@ -227,4 +238,5 @@ export default {
 #form .negative {
   color: red;
 }
+
 </style>

@@ -114,10 +114,15 @@ export default {
       !window.sessionStorage.getItem("master_email") ||
       !window.sessionStorage.getItem("jwtToken")
     ) {
-      this.$router.replace({
-        name: "Login"
-      });
+      this.logoutUser()
+      // this.$router.replace({
+      //   name: "Login"
+      // });
     }
+    window.addEventListener('load', function () {
+      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+     
+      })
     this.refreshToken()
     this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
   },
@@ -127,13 +132,6 @@ export default {
       // if (this.search_users.match(/^.+@.+\.+$/)) {
       // }
     }
-    // },
-    // refresh_token: function() {
-    //   this.debouncedRefreshToken();
-    //   if (this.newToken != "" && this.newToken != window.sessionStorage.getItem("jwtToken")) {
-    //     window.sessionStorage.setItem("jwtToken", this.newToken);
-    //   }
-    // }
   },
   data() {
     return {
@@ -212,7 +210,7 @@ export default {
             var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {
-              if (gqlError[0].message.includes("Token invalid.")) {
+              if (gqlError[0].message.includes("Invalid token.")) {
                 this.logoutUser();
               }
             }
@@ -228,6 +226,7 @@ export default {
       this.drawer_state = state;
     },
     logoutUser() {
+      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "visible"
       window.sessionStorage.removeItem("master_email");
       window.sessionStorage.removeItem("jwtToken");
       this.$router.replace("/");
@@ -255,7 +254,7 @@ export default {
           var gqlError = error.graphQLErrors;
 
           if (gqlError.length > 0) {
-            if (gqlError[0].message.includes("Token invalid.")) {
+            if (gqlError[0].message.includes("Invalid token.")) {
               this.logoutUser();
             }
           }

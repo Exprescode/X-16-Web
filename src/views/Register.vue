@@ -40,6 +40,12 @@
 import { ADD_USER } from "@/graphql";
 export default {
   name: "Register",
+  created() {
+       window.addEventListener('load', function () {
+      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+     
+      })
+  },
   data() {
     return {
       email: "",
