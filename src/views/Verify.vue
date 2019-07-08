@@ -4,101 +4,77 @@
     <div id="subtitle">Fueled up and ready to fly!</div>
     <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
-      <div class="label" autocomplete>EMAIL</div>
+      <div class="label" autocomplete>Verification Code</div>
       <input
-        type="email"
-        spellcheck="false"
-        v-on:keyup.enter="getUser"
-        v-model="email"
-        autocomplete="email"
+        v-on:keyup.enter="verifyCode"
+        v-model="code"
         required
       >
     </div>
+  
     <div class="group">
-      <div class="label">PASSWORD</div>
-      <input
-        type="password"
-        v-on:keyup.enter="getUser"
-        v-model="password"
-        autocomplete="password"
-        required
-      >
-    </div>
-    <div class="group">
-      <button v-on:click="getUser">LOGIN</button>
-      <div id="links">
-        <div>
-          Need an account?
-          <router-link to="/register">
-            <a>Register</a>
-          </router-link>
-        </div>
-        <div>
-          Forget Password?
-          <router-link to="/reset">
-            <a>Reset</a>
-          </router-link>
-        </div>
-      </div>
+      <button v-on:click="verifyCode">VERIFY</button>
     </div>
   </form>
 </template>
 
 <script>
-import { GET_USER } from "@/graphql";
+import { SEND_CODE_MUTATION } from "@/graphql";
 
 export default {
   name: "Login",
   props: ["message", "message_style"],
   data() {
     return {
-      email: "",
-      password: "",
+      email: window.sessionStorage.getItem("verify_email"),
+      code: "",
       active_message: this.message,
       active_message_style: this.message_style
     };
   },
   methods: {
-    getUser() {
-      this.$recaptcha('login').then((token) => {
+    verifyCode() {
+      this.$recaptcha('verify').then((token) => {
         const email = this.email;
-        const password = this.password;
-        if (email === "" || password === "") {
-          this.setMessage("Invalid email or password!", "message negative");
+        const code = this.code;
+        if (code === "" ||  email == "") {
+          this.setMessage("Invalid code", "message negative");
           return;
         }
         this.$apollo
-          .query({
-            query: GET_USER,
+          .mutate({
+            mutation: SEND_CODE_MUTATION,
             variables: {
               email: email,
-              password: password,
+              code: code,
               token: token
             }
           })
           .then(data => {
             // eslint-disable-next-line
-              this.$router.replace("/chat");
-              window.sessionStorage.setItem("master_email", this.email);
-              window.sessionStorage.setItem("jwtToken", data.data.GetUser);
+            if (data.data.VerifyCode == "User verified") {
+              this.$router.replace({
+                name: "Login",
+                params: {
+                  message: "User verified!",
+                  message_style: "message positive"
+                }
+            });
+              window.sessionStorage.removeItem("verify_email");
+            }
           })
           .catch(error => {
             // eslint-disable-next-line
-            var gqlError = error.graphQLErrors[0].message
+                        var gqlError = error.graphQLErrors[0].message
 
             if (gqlError.includes("Captcha failed")) {
                 this.setMessage("Captcha failed", "message negative");
-            } else if (gqlError.includes("User not verified")) {
-              this.$router.replace("/verify");
+            } else if (gqlError.includes("Token is invalid")) {
+              this.setMessage("Your token is invalid.", "message negative");
               
             }else {
-              this.setMessage("Invalid email or password!", "message negative");
+              this.setMessage("An error occured", "message negative");
             }  
-            this.password = "";
-            // this.setMessage(
-            //   "Something went wrong. Please try again later.",
-            //   "message negative"
-            // );
         });
       })
     }

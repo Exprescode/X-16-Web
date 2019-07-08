@@ -10,6 +10,7 @@ import App from "./App.vue";
 import router from './router'
 import store from './store'
 import VueNativeNotification from 'vue-native-notification'
+import { VueReCaptcha } from 'vue-recaptcha-v3'
 
 Vue.config.productionTip = false;
 
@@ -50,6 +51,8 @@ Vue.use(VueNativeNotification, {
   // showing notification (default: true)
   requestOnNotify: true
 })
+
+Vue.use(VueReCaptcha, { siteKey: '6LcvfqwUAAAAAJgEnl3tX8LQpdTli0XwYjCJyChV' })
 
 new Vue({
   apolloProvider,

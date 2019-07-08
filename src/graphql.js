@@ -1,14 +1,14 @@
 import gql from "graphql-tag";
 
 export const GET_USER = gql`
-  query($email: String!, $password: String!) {
-    GetUser(email: $email, password: $password)
+  query($email: String!, $password: String!, $token: String!) {
+    GetUser(email: $email, password: $password, captchaToken: $token)
   }
 `;
 
 export const ADD_USER = gql`
-  mutation($email: String!, $name: String!, $password: String!) {
-    SignUpUser(email: $email, name: $name, password: $password)
+  mutation($email: String!, $name: String!, $password: String!, $token: String!) {
+    SignUpUser(email: $email, name: $name, password: $password, captchaToken: $token)
   }
 `;
 
@@ -100,6 +100,12 @@ export const SEND_MESSAGE_MUTATION = gql`
   }
 `;
 
+export const SEND_CODE_MUTATION = gql`
+  mutation SendCodeMutation($email: String!, $code: String!, $token: String!) {
+    VerifyCode(email: $email, code: $code, captchaToken: $token) \
+  }
+`;
+
 export const MESSAGE_SENT_SUBSCRIPTION = gql`
   subscription MessageSentSubscription {
     messageSent {
@@ -108,4 +114,14 @@ export const MESSAGE_SENT_SUBSCRIPTION = gql`
       message
     }
   }
+`;
+
+export const CREATE_FILE_MUTATION = gql`
+    mutation UploadSingleFileMutation($file: Upload!) {
+      UploadSingleFile(file: $file) {
+        id
+        filename
+      }
+    }
+
 `;

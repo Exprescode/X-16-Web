@@ -126,6 +126,7 @@ export default {
   data() {
     return {
       master: window.sessionStorage.getItem("master_email"),
+      token: window.sessionStorage.getItem("jwtToken"),
       users: "",
       GetIndividualChats: "",
       message: "",
@@ -142,7 +143,8 @@ export default {
       query: GET_INDIVIDUAL_CHATS,
       variables() {
         return {
-          email: this.master
+          email: this.master,
+          //jwtToken: this.token
         };
       },
       subscribeToMore: {
@@ -296,7 +298,6 @@ export default {
     notifyPopup (fullMessage) {
       this.$notification.show(fullMessage.sender.name, {
         body: fullMessage.message,
-        requireInteraction: false,
       }, {})
     }
 

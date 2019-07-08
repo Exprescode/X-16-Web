@@ -58,42 +58,48 @@ export default {
       this.password_error = false;
     },
     addUser() {
-      this.clearError();
-      if (this.password != this.repassword) {
-        this.password_error = true;
-        return;
-      }
-      this.email_error = false;
-      this.connection_error = false;
-      const email = this.email;
-      const name = this.name;
-      const password = this.password;
-      this.$apollo
-        .mutate({
-          mutation: ADD_USER,
-          variables: {
-            email: email,
-            name: name,
-            password: password
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.$router.replace({
-            name: "Login",
-            params: {
-              message: "Success! You now have an account!",
-              message_style: "message positive"
+      this.$recaptcha('register').then((token) => {
+        this.clearError();
+        if (this.password != this.repassword) {
+          this.password_error = true;
+          return;
+        }
+        this.email_error = false;
+        this.connection_error = false;
+        const email = this.email;
+        const name = this.name;
+        const password = this.password;
+        this.$apollo
+          .mutate({
+            mutation: ADD_USER,
+            variables: {
+              email: email,
+              name: name,
+              password: password,
+              token: token
             }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+            
+            window.sessionStorage.setItem("verify_email", this.email);
+            
+            this.$router.replace({
+              name: "Verify",
+              params: {
+                message: "Please check your email for the verification code!",
+                message_style: "message positive"
+              }
+            });
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            this.email_error = true;
           });
         })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          this.email_error = true;
-        });
-    }
+    },
   }
 };
 </script>
