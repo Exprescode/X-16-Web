@@ -37,7 +37,7 @@ export default {
       this.$recaptcha('verify').then((token) => {
         const email = this.email;
         const code = this.code;
-        if (code === "" ||  email == "") {
+        if (code == "" ||  email == "") {
           this.setMessage("Invalid code", "message negative");
           return;
         }
@@ -63,16 +63,19 @@ export default {
             }
           })
           .catch(error => {
-            var gqlError = error.graphQLErrors[0].message
-
-            if (gqlError.includes("Captcha failed")) {
-                this.setMessage("Captcha failed", "message negative");
-            } else if (gqlError.includes("Token is invalid")) {
-              this.setMessage("Your token is invalid.", "message negative");
-              
-            }else {
-              this.setMessage("An error occured", "message negative");
-            }  
+            // eslint-disable-next-line
+            var gqlError = error.graphQLErrors
+            
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Captcha failed")) {
+                  this.setMessage("Captcha failed", "message negative");
+              } else if (gqlError[0].message.includes("Token is invalid")) {
+                this.setMessage("Your token is invalid.", "message negative");
+                
+              }else {
+                this.setMessage("An error occured", "message negative");
+              }  
+            }
         });
       })
     }

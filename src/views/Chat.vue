@@ -2,51 +2,51 @@
   <div id="container">
     <div id="left_panel">
       <div id="chat_list">
-        <ChatListEntry v-for="chat in GetIndividualChats" v-bind:chat="chat" v-bind:key="chat.id"/>
+        <ChatListEntry v-for="chat in GetIndividualChats" v-bind:chat="chat" v-bind:key="chat.id" />
       </div>
       <div id="toolbar">
         <button class="menu" v-on:click="setDrawerState('lobby')">
-          <img src="../assets/menu.png">
+          <img src="../assets/menu.png" />
         </button>
         <div class="search">
-          <input type="text" placeholder="Search" v-model="search_chat_list">
+          <input type="text" placeholder="Search" v-model="search_chat_list" />
           <button v-show="search_chat_list" v-on:click="clearSearchChatList">
-            <img src="../assets/cross.png">
+            <img src="../assets/cross.png" />
           </button>
         </div>
       </div>
       <div id="drawer" v-show="drawer_state === 'lobby'">
         <button v-on:click="setDrawerState('')">
-          <img src="../assets/cross_2.png">Close
+          <img src="../assets/cross_2.png" />Close
         </button>
         <button v-on:click="logoutUser">
-          <img src="../assets/door.png">Logout
+          <img src="../assets/door.png" />Logout
         </button>
         <button>
-          <img src="../assets/gear.png">Settings
+          <img src="../assets/gear.png" />Settings
         </button>
         <button v-on:click="setDrawerState('add-chat')">
-          <img src="../assets/plus.png">New Chat
+          <img src="../assets/plus.png" />New Chat
         </button>
       </div>
       <div id="drawer_new_chat" v-show="drawer_state === 'add-chat'">
         <div id="people_list">
-          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id"/>
+          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id" />
         </div>
         <div id="search">
-          <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
+          <input type="text" placeholder="Search" v-model="search_users" spellcheck="false" />
           <button v-on:click="clearUsers">
-            <img src="../assets/cross.png" v-show="search_users">
+            <img src="../assets/cross.png" v-show="search_users" />
           </button>
         </div>
         <div id="counter">
           <span>{{selected_users.length}}</span> Selected
         </div>
         <button v-on:click="createChat" v-bind:disabled="selected_users.length < 1">
-          <img src="../assets/plus.png">Create
+          <img src="../assets/plus.png" />Create
         </button>
         <button v-on:click="cancelCreateChat">
-          <img src="../assets/cross_2.png">Cancel
+          <img src="../assets/cross_2.png" />Cancel
         </button>
       </div>
     </div>
@@ -68,13 +68,13 @@
               v-model="message"
               v-on:keyup.enter="sendMessage"
               spellcheck="false"
-            >
+            />
             <button v-show="search_chat && message" v-on:click="clearSearchChat">
-              <img src="../assets/cross.png">
+              <img src="../assets/cross.png" />
             </button>
           </div>
           <button id="search">
-            <img src="../assets/magnifying_glass.png">
+            <img src="../assets/magnifying_glass.png" />
           </button>
           <button v-on:click="sendMessage" id="send">SEND</button>
         </div>
@@ -99,7 +99,8 @@ import {
   INDIVIDUAL_CHAT_SUB,
   GET_USERS,
   CREATE_CHAT,
-  SEND_MESSAGE
+  SEND_MESSAGE,
+  REFRESH_TOKEN_MUTATION
 } from "@/graphql";
 export default {
   name: "Chat",
@@ -109,11 +110,15 @@ export default {
     PeopleListEntry
   },
   created() {
-    if (!window.sessionStorage.getItem("master_email")) {
+    if (
+      !window.sessionStorage.getItem("master_email") ||
+      !window.sessionStorage.getItem("jwtToken")
+    ) {
       this.$router.replace({
         name: "Login"
       });
     }
+    this.refreshToken()
     this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
   },
   watch: {
@@ -122,11 +127,19 @@ export default {
       // if (this.search_users.match(/^.+@.+\.+$/)) {
       // }
     }
+    // },
+    // refresh_token: function() {
+    //   this.debouncedRefreshToken();
+    //   if (this.newToken != "" && this.newToken != window.sessionStorage.getItem("jwtToken")) {
+    //     window.sessionStorage.setItem("jwtToken", this.newToken);
+    //   }
+    // }
   },
   data() {
     return {
       master: window.sessionStorage.getItem("master_email"),
       token: window.sessionStorage.getItem("jwtToken"),
+      newToken: "",
       users: "",
       GetIndividualChats: "",
       message: "",
@@ -135,7 +148,8 @@ export default {
       search_users: "",
       selected_users: [],
       search_chat_list: "",
-      search_chat: false
+      search_chat: false,
+      refreshing: null
     };
   },
   apollo: {
@@ -144,7 +158,7 @@ export default {
       variables() {
         return {
           email: this.master,
-          //jwtToken: this.token
+          token: this.token
         };
       },
       subscribeToMore: {
@@ -157,8 +171,6 @@ export default {
         updateQuery: (previousResult, { subscriptionData }) => {
           // eslint-disable-next-line
           console.log(previousResult);
-          // eslint-disable-next-line
-          console.log("yay");
           // eslint-disable-next-line
           console.log(subscriptionData);
           return {
@@ -179,7 +191,35 @@ export default {
       // }
     }
   },
+
   methods: {
+    refreshToken() {
+      this.refreshing = setInterval(() => {
+        // eslint-disable-next-line
+        this.$apollo
+          .mutate({
+            mutation: REFRESH_TOKEN_MUTATION,
+            variables: {
+              email: this.master,
+              token: this.token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
+          })
+          .catch(error => {
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Token invalid.")) {
+                this.logoutUser();
+              }
+            }
+          });
+      }, 480000);
+    },
+
     setActiveChat(chat) {
       this.active_chat = chat;
       this.setScrollPosition();
@@ -189,6 +229,7 @@ export default {
     },
     logoutUser() {
       window.sessionStorage.removeItem("master_email");
+      window.sessionStorage.removeItem("jwtToken");
       this.$router.replace("/");
     },
     getUsers() {
@@ -199,7 +240,8 @@ export default {
         .query({
           query: GET_USERS,
           variables: {
-            email: this.search_users
+            email: this.search_users,
+            token: this.token
           }
         })
         .then(data => {
@@ -210,6 +252,13 @@ export default {
         .catch(error => {
           // eslint-disable-next-line
           console.log(error);
+          var gqlError = error.graphQLErrors;
+
+          if (gqlError.length > 0) {
+            if (gqlError[0].message.includes("Token invalid.")) {
+              this.logoutUser();
+            }
+          }
         });
     },
     isSelectedUser(email) {
@@ -241,7 +290,8 @@ export default {
           variables: {
             creator: this.master,
             receipient: this.selected_users,
-            name: chat_name
+            name: chat_name,
+            token: this.token
           }
         })
         .then(data => {
@@ -265,6 +315,7 @@ export default {
       this.message = "";
     },
     sendMessage() {
+      // eslint-disable-next-line
       if (!this.message) {
         return;
       }
@@ -277,7 +328,8 @@ export default {
             sender: this.master,
             message: message,
             individualChatId: this.active_chat.id,
-            groupChatId: ""
+            groupChatId: "",
+            token: this.token
           }
         })
         .then(data => {
@@ -295,10 +347,14 @@ export default {
         chat_window.scrollTop = chat_window.scrollHeight;
       }, 1);
     },
-    notifyPopup (fullMessage) {
-      this.$notification.show(fullMessage.sender.name, {
-        body: fullMessage.message,
-      }, {})
+    notifyPopup(fullMessage) {
+      this.$notification.show(
+        fullMessage.sender.name,
+        {
+          body: fullMessage.message
+        },
+        {}
+      );
     }
 
     // async sendMessage() {
@@ -313,6 +369,9 @@ export default {
     //     }
     //   });
     // }
+  },
+  beforeDestroy() {
+    clearInterval(this.refreshing);
   }
 };
 </script>

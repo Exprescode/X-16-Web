@@ -90,7 +90,7 @@ export default {
                 this.setMessage("Captcha failed", "message negative");
             } else if (gqlError.includes("User not verified")) {
               this.$router.replace("/verify");
-              
+              window.sessionStorage.setItem("verify_email", this.email);
             }else {
               this.setMessage("Invalid email or password!", "message negative");
             }  
