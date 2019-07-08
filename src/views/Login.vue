@@ -107,19 +107,6 @@ export default {
       this.active_message = message;
       this.active_message_style = message_style;
     },
-    // uploadsingleFile() {
-    //     this.$apollo
-    //       .mutate({
-    //         mutation: CREATE_FILE_MUTATION,
-    //         variables: { picture: this.picture }
-    //       })
-    //       .then(data => {
-    //         console.log(data)
-    //       })
-    //       .catch(err => {
-    //         console.log(err)
-    //       })
-    // }
   }
 };
 </script>

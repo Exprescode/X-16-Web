@@ -51,7 +51,6 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
             if (data.data.VerifyCode == "User verified") {
               this.$router.replace({
                 name: "Login",
@@ -64,8 +63,7 @@ export default {
             }
           })
           .catch(error => {
-            // eslint-disable-next-line
-                        var gqlError = error.graphQLErrors[0].message
+            var gqlError = error.graphQLErrors[0].message
 
             if (gqlError.includes("Captcha failed")) {
                 this.setMessage("Captcha failed", "message negative");
@@ -83,19 +81,6 @@ export default {
       this.active_message = message;
       this.active_message_style = message_style;
     },
-    // uploadsingleFile() {
-    //     this.$apollo
-    //       .mutate({
-    //         mutation: CREATE_FILE_MUTATION,
-    //         variables: { picture: this.picture }
-    //       })
-    //       .then(data => {
-    //         console.log(data)
-    //       })
-    //       .catch(err => {
-    //         console.log(err)
-    //       })
-    // }
   }
 };
 </script>
@@ -180,25 +165,6 @@ export default {
   color: white;
   font-size: 14px;
   font-family: "Roboto Medium", sans-serif;
-}
-
-#form #links {
-  padding: 8px 0 0 0;
-  font-family: "Roboto Light", sans-serif;
-}
-
-#form #links a {
-  font-family: "Roboto Medium", sans-serif;
-  text-decoration: none;
-  color: #82bbff;
-}
-
-#form #links a:hover {
-  text-decoration: underline;
-}
-
-#form #links a:visited {
-  color: #82bbff;
 }
 
 #form .message {

@@ -47,8 +47,6 @@ const apolloProvider = new VueApollo({
 Vue.use(VueApollo);
 
 Vue.use(VueNativeNotification, {
-  // Automatic permission request before
-  // showing notification (default: true)
   requestOnNotify: true
 })
 
