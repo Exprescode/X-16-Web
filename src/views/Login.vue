@@ -70,10 +70,30 @@ export default {
     getUser() {
                   /* eslint-disable */
       this.$recaptcha('login').then((token) => {
-        const email = this.email;
-        const password = this.password;
-        if (email === "" || password === "") {
-          console.log(email, password)
+      const email = this.email;
+      const password = this.password;
+      if (email === "" || password === "") {
+        this.setMessage("Invalid email or password!", "message negative");
+        return;
+      }
+      this.$apollo
+        .query({
+          query: GET_USER,
+          variables: {
+            email: email,
+            password: password
+          }
+        })
+        .then(data => {
+          // eslint-disable-next-line
+          console.log(data);
+          this.$router.replace("/chat");
+          window.sessionStorage.setItem("master_email", this.email);
+          window.sessionStorage.setItem("jwtToken", data.data.GetUser);
+        })
+        .catch(error => {
+          // eslint-disable-next-line
+          console.log(error);
           this.setMessage("Invalid email or password!", "message negative");
           return;
         }

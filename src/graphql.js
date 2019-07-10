@@ -45,6 +45,35 @@ export const GET_INDIVIDUAL_CHATS = gql`
   }
 `;
 
+export const GET_GROUP_CHATS = gql`
+  query($email: String!) {
+    GetGroupChats(email: $email) {
+      id
+      name
+      members {
+        id
+        email
+        name
+      }
+      admins {
+        id
+        email
+        name
+      }
+      messages {
+        id
+        sender {
+          id
+          email
+          name
+        }
+        datetime
+        message
+      }
+    }
+  }
+`;
+
 export const CREATE_CHAT = gql`
   mutation($creator: String!, $receipient: [String]!, $name: String!, $token: String!) {
     CreateChat(creator: $creator, receipient: $receipient, name: $name, jwtToken: $token)
@@ -91,6 +120,7 @@ export const INDIVIDUAL_CHAT_SUB = gql`
     }
   }
 `;
+
 export const SEND_MESSAGE_MUTATION = gql`
   mutation SendMessageMutation($from: String!, $message: String!, $token: String!) {
     sendMessage(from: $from, message: $message, jwtToken: $token) {
@@ -144,6 +174,33 @@ export const UPLOAD_FILE_MUTATION = gql`
         id
         filename
       }
-    }
+    }`;
 
+export const GROUP_CHAT_SUB = gql`
+  subscription($email: String!) {
+    GroupChatCreated(email: $email) {
+      id
+      name
+      members {
+        id
+        email
+        name
+      }
+      admins {
+        id
+        email
+        name
+      }
+      messages {
+        id
+        sender {
+          id
+          email
+          name
+        }
+        datetime
+        message
+      }
+    }
+  }
 `;

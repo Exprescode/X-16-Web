@@ -96,6 +96,8 @@ import PeopleListEntry from "@/components/PeopleListEntry.vue";
 import {
   GET_INDIVIDUAL_CHATS,
   INDIVIDUAL_CHAT_SUB,
+  GET_GROUP_CHATS,
+  GROUP_CHAT_SUB,
   GET_USERS,
   CREATE_CHAT,
   SEND_MESSAGE,
@@ -131,7 +133,10 @@ export default {
   },
   computed: {
     chats: function() {
-      return this.GetIndividualChats;
+      var list = [];
+      Array.prototype.push.apply(list, this.GetIndividualChats);
+      Array.prototype.push.apply(list, this.GetGroupChats);
+      return list;
     }
   },
   watch: {
@@ -147,7 +152,8 @@ export default {
       token: window.sessionStorage.getItem("jwtToken"),
       newToken: "",
       users: [],
-      GetIndividualChats: "",
+      GetIndividualChats: [],
+      GetGroupChats: [],
       message: "",
       active_chat: null,
       drawer_state: "",
@@ -180,6 +186,30 @@ export default {
             GetIndividualChats: [
               subscriptionData.data.IndividualChatCreated,
               ...previousResult.GetIndividualChats
+            ]
+          };
+        }
+      }
+    },
+    GetGroupChats: {
+      query: GET_GROUP_CHATS,
+      variables() {
+        return {
+          email: this.master
+        };
+      },
+      subscribeToMore: {
+        document: GROUP_CHAT_SUB,
+        variables() {
+          return {
+            email: this.master
+          };
+        },
+        updateQuery: (previousResult, { subscriptionData }) => {
+          return {
+            GetGroupChats: [
+              subscriptionData.data.GroupChatCreated,
+              ...previousResult.GetGroupChats
             ]
           };
         }
@@ -336,11 +366,16 @@ export default {
       this.drawer_state = "lobby";
     },
     createChat() {
-      var chat_name = "";
       var receipient = [];
       for (var i = 0; i < this.selected_users.length; i++) {
         receipient.push(this.selected_users[i].email);
       }
+      var chat_name = "";
+      if (receipient.length > 1) {
+        chat_name = "New Group";
+      }
+      // eslint-disable-next-line
+      console.log(chat_name);
       this.$apollo
         .mutate({
           mutation: CREATE_CHAT,
@@ -353,7 +388,7 @@ export default {
         })
         .then(data => {
           // eslint-disable-next-line
-          console.log(data.data.CreateChat);
+          console.log(data);
           if (data.data.CreateChat == "Chat Created") {
             this.drawer_state = "";
           }
