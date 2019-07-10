@@ -90,6 +90,7 @@ export default {
           // eslint-disable-next-line
           console.log(context.chat.id);
           context.chat.messages.push(data.data.MessageSent);
+          context.$parent.notifyPopup(data.data.MessageSent)
           context.$parent.setScrollPosition();
         },
         error(error) {
@@ -141,7 +142,8 @@ export default {
     },
     setSubscription(sender) {
       sender;
-    }
+    },    
+
   }
 };
 </script>

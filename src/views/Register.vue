@@ -7,6 +7,7 @@
     </div>
     <div id="subtitle">A new experience awaits!</div>
     <div class="error" v-if="connection_error">Oops! Something went wrong. Please try again later.</div>
+    <div class="error" v-if="captcha_error">Captcha failed. Please try again.</div>
     <div class="error" v-if="password_error">Passwords do not match!</div>
     <div class="error" v-if="email_error">
       Email already exist!
@@ -48,7 +49,8 @@ export default {
       repassword: "",
       email_error: false,
       connection_error: false,
-      password_error: false
+      password_error: false,
+      captcha_error: false
     };
   },
   methods: {
@@ -56,44 +58,62 @@ export default {
       this.email_error = false;
       this.connection_error = false;
       this.password_error = false;
+      this.captcha_error= false;
     },
     addUser() {
-      this.clearError();
-      if (this.password != this.repassword) {
-        this.password_error = true;
-        return;
-      }
-      this.email_error = false;
-      this.connection_error = false;
-      const email = this.email;
-      const name = this.name;
-      const password = this.password;
-      this.$apollo
-        .mutate({
-          mutation: ADD_USER,
-          variables: {
-            email: email,
-            name: name,
-            password: password
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.$router.replace({
-            name: "Login",
-            params: {
-              message: "Success! You now have an account!",
-              message_style: "message positive"
+      this.$recaptcha('register').then((token) => {
+        this.clearError();
+        if (this.password != this.repassword) {
+          this.password_error = true;
+          return;
+        }
+        this.email_error = false;
+        this.connection_error = false;
+        const email = this.email;
+        const name = this.name;
+        const password = this.password;
+        this.$apollo
+          .mutate({
+            mutation: ADD_USER,
+            variables: {
+              email: email,
+              name: name,
+              password: password,
+              token: token
             }
+          })
+          .then(data => {
+          /* eslint-disable */
+            console.log(data);
+            
+            window.sessionStorage.setItem("verify_email", this.email);
+            
+            this.$router.replace({
+              name: "Verify",
+              params: {
+                message: "Please check your email for the verification code!",
+                message_style: "message positive"
+              }
+            });
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Captcha failed")) {
+                  this.captcha_error = true
+              } else if (gqlError[0].message.includes("A unique constraint would be violated on User")) {
+                this.email_error = true
+              } 
+            } else {
+              this.connection_error = true
+            }
+            
           });
         })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          this.email_error = true;
-        });
-    }
+    },
   }
 };
 </script>

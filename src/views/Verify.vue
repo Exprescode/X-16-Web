@@ -1,89 +1,89 @@
 <template>
-  <div id="form">
-    <div id="title">
-      <router-link to="/" replace>
-        <a>X-16</a>
-      </router-link>
-    </div>
-    <div id="subtitle">Don't panic! Stay calm.</div>
-    <div class="error" v-if="connection_error">Something went wrong. Please try again later.</div>
-    <div class="error" v-if="captcha_error">Captcha failed. Please try again.</div>
-    <div class="error" v-if="email_error">
-      Email does not exist!
-      <router-link to="/register">
-        <a>Create Account</a>
-      </router-link>
-    </div>
+  <form id="form">
+    <div id="title">X-16</div>
+    <div id="subtitle">Fueled up and ready to fly!</div>
+    <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
-      <div class="label">EMAIL</div>
-      <input type="email" spellcheck="false" v-model="email" v-on:keyup.enter="reset">
+      <div class="label" autocomplete>VERIFICATION CODE</div>
+      <input
+        v-on:keyup.enter="verifyCode"
+        v-model="code"
+        required
+      >
     </div>
+  
     <div class="group">
-      <button v-on:click="reset">RESET</button>
+      <button v-on:click="verifyCode">VERIFY</button>
     </div>
-  </div>
+  </form>
 </template>
 
 <script>
-import { CHECK_USER_EXISTS_QUERY } from "@/graphql";
+import { SEND_CODE_MUTATION } from "@/graphql";
 
 export default {
-  name: "Reset",
+  name: "Login",
+  props: ["message", "message_style"],
   data() {
     return {
-      email: "",
-      email_error: false,
-      connection_error: false,
-      captcha_error: false
+      email: window.sessionStorage.getItem("verify_email"),
+      code: "",
+      active_message: this.message,
+      active_message_style: this.message_style
     };
   },
-   methods: {
-    reset() {
-                  /* eslint-disable */
-      this.$recaptcha('login').then((token) => {
+  methods: {
+    verifyCode() {
+      this.$recaptcha('verify').then((token) => {
         const email = this.email;
-        if (email === "") {
-          this.setMessage("Please type in an email", "message negative");
+        const code = this.code;
+        if (code == "" ||  email == "") {
+          this.setMessage("Invalid code", "message negative");
           return;
         }
         this.$apollo
-          .query({
-            query: CHECK_USER_EXISTS_QUERY,
+          .mutate({
+            mutation: SEND_CODE_MUTATION,
             variables: {
               email: email,
+              code: code,
               token: token
             }
           })
           .then(data => {
-            // eslint-disable-next-line
-            window.sessionStorage.setItem("reset_email", this.email);
-
-            this.$router.replace({
-              name: "ResetPassword",
-              params: {
-                message: "Please check your email for the verification code!",
-                message_style: "message positive"
-              }
+            if (data.data.VerifyCode == "User verified") {
+              this.$router.replace({
+                name: "Login",
+                params: {
+                  message: "User verified!",
+                  message_style: "message positive"
+                }
             });
+              window.sessionStorage.removeItem("verify_email");
+            }
           })
           .catch(error => {
             // eslint-disable-next-line
-              console.log(error)
-             var gqlError = error.graphQLErrors;
-
+            var gqlError = error.graphQLErrors
+            
             if (gqlError.length > 0) {
-              console.log(gqlError[0].message)
               if (gqlError[0].message.includes("Captcha failed")) {
-                 this.captcha_error = true
-              } else if (gqlError[0].message.includes("query returned no result")) {
-                this.email_error = true
+                  this.setMessage("Captcha failed", "message negative");
+              } else if (gqlError[0].message.includes("Token is invalid")) {
+                this.setMessage("Your verification code is invalid.", "message negative");
+                
+              }else {
+                this.setMessage("An error occured", "message negative");
               }  
-            } else {
-              this.connection_error = true
-            } 
+            }
         });
       })
     }
+   ,
+    setMessage(message, message_style) {
+      this.active_message = message;
+      this.active_message_style = message_style;
+    },
   }
 };
 </script>
@@ -170,21 +170,19 @@ export default {
   font-family: "Roboto Medium", sans-serif;
 }
 
-#form .error {
+#form .message {
   margin: 0 0 0 8px;
   padding: 0;
-  color: red;
   text-align: center;
   font-size: 14px;
   font-family: "Roboto Medium", sans-serif;
 }
 
-#form .error a {
-  text-decoration: none;
-  color: #3c95ff;
+#form .positive {
+  color: lime;
 }
 
-#form .error a:hover {
-  text-decoration: underline;
+#form .negative {
+  color: red;
 }
 </style>

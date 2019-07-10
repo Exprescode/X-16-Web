@@ -6,32 +6,32 @@
       </div>
       <div id="toolbar">
         <button class="menu" v-on:click="setDrawerState('lobby')">
-          <img src="../assets/menu.png">
+          <img src="../assets/menu.png" />
         </button>
         <div class="search">
-          <input type="text" placeholder="Search" v-model="search_chat_list">
+          <input type="text" placeholder="Search" v-model="search_chat_list" />
           <button v-show="search_chat_list" v-on:click="clearSearchChatList">
-            <img src="../assets/cross.png">
+            <img src="../assets/cross.png" />
           </button>
         </div>
       </div>
       <div id="drawer" v-show="drawer_state === 'lobby'">
         <button v-on:click="setDrawerState('')">
-          <img src="../assets/cross_2.png">Close
+          <img src="../assets/cross_2.png" />Close
         </button>
         <button v-on:click="logoutUser">
-          <img src="../assets/door.png">Logout
+          <img src="../assets/door.png" />Logout
         </button>
         <button>
-          <img src="../assets/gear.png">Settings
+          <img src="../assets/gear.png" />Settings
         </button>
         <button v-on:click="setDrawerState('add-chat')">
-          <img src="../assets/plus.png">New Chat
+          <img src="../assets/plus.png" />New Chat
         </button>
       </div>
       <div id="drawer_new_chat" v-show="drawer_state === 'add-chat'">
         <div id="people_list">
-          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id"/>
+          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id" />
         </div>
         <div id="search">
           <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
@@ -44,10 +44,10 @@
           <span>{{selected_users.length}}</span> Selected
         </div>
         <button v-on:click="createChat" v-bind:disabled="selected_users.length < 1">
-          <img src="../assets/plus.png">Create
+          <img src="../assets/plus.png" />Create
         </button>
         <button v-on:click="cancelCreateChat">
-          <img src="../assets/cross_2.png">Cancel
+          <img src="../assets/cross_2.png" />Cancel
         </button>
       </div>
     </div>
@@ -69,15 +69,18 @@
               v-model="message"
               v-on:keyup.enter="sendMessage"
               spellcheck="false"
-            >
+            />
             <button v-show="search_chat && message" v-on:click="clearSearchChat">
-              <img src="../assets/cross.png">
+              <img src="../assets/cross.png" />
             </button>
           </div>
           <button id="search">
-            <img src="../assets/magnifying_glass.png">
+            <img src="../assets/magnifying_glass.png" />
           </button>
           <button v-on:click="sendMessage" id="send">SEND</button>
+            <!--<input type="file" v-on:change="uploadFile" ref="fileToUpload">-->
+          <!--<vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>-->
+
         </div>
       </div>
       <div id="placeholder" v-else>Please select a chat.</div>
@@ -97,7 +100,9 @@ import {
   GROUP_CHAT_SUB,
   GET_USERS,
   CREATE_CHAT,
-  SEND_MESSAGE
+  SEND_MESSAGE,
+  REFRESH_TOKEN_MUTATION,
+  UPLOAD_FILE_MUTATION
 } from "@/graphql";
 export default {
   name: "Chat",
@@ -107,11 +112,23 @@ export default {
     PeopleListEntry
   },
   created() {
-    if (!window.sessionStorage.getItem("master_email")) {
-      this.$router.replace({
-        name: "Login"
-      });
+              // eslint-disable-next-line
+    console.log("Created chat")
+    if (
+      !window.sessionStorage.getItem("master_email") ||
+      !window.sessionStorage.getItem("jwtToken")
+    ) {
+      this.logoutUser()
+      // this.$router.replace({
+      //   name: "Login"
+      // });
     }
+    
+    window.addEventListener('load', function () {
+       document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+    })
+    this.oneRefreshToken()
+    this.refreshToken()
     this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
   },
   computed: {
@@ -132,6 +149,8 @@ export default {
   data() {
     return {
       master: window.sessionStorage.getItem("master_email"),
+      token: window.sessionStorage.getItem("jwtToken"),
+      newToken: "",
       users: [],
       GetIndividualChats: [],
       GetGroupChats: [],
@@ -141,7 +160,9 @@ export default {
       search_users: "",
       selected_users: [],
       search_chat_list: "",
-      search_chat: false
+      search_chat: false,
+      refreshing: null,
+      fileToUpload: []
     };
   },
   apollo: {
@@ -149,7 +170,8 @@ export default {
       query: GET_INDIVIDUAL_CHATS,
       variables() {
         return {
-          email: this.master
+          email: this.master,
+          token: this.token
         };
       },
       subscribeToMore: {
@@ -194,7 +216,57 @@ export default {
       }
     }
   },
+
   methods: {
+    oneRefreshToken() {
+       this.$apollo
+          .mutate({
+            mutation: REFRESH_TOKEN_MUTATION,
+            variables: {
+              email: this.master,
+              token: this.token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
+          })
+          .catch(error => {
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.logoutUser();
+              }
+            }
+          });
+    },
+    refreshToken() {
+      this.refreshing = setInterval(() => {
+        // eslint-disable-next-line
+        this.$apollo
+          .mutate({
+            mutation: REFRESH_TOKEN_MUTATION,
+            variables: {
+              email: this.master,
+              token: this.token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
+          })
+          .catch(error => {
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.logoutUser();
+              }
+            }
+          });
+      }, 480000);
+    },
     sortGetIndividualChats() {
       this.GetIndividualChats.sort(function(a, b) {
         var a_is_new_chat = a.messages.length < 1;
@@ -237,7 +309,9 @@ export default {
       this.drawer_state = state;
     },
     logoutUser() {
+      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "visible"
       window.sessionStorage.removeItem("master_email");
+      window.sessionStorage.removeItem("jwtToken");
       this.$router.replace("/");
     },
     getUsers() {
@@ -249,7 +323,8 @@ export default {
         .query({
           query: GET_USERS,
           variables: {
-            email: this.search_users
+            email: this.search_users,
+            token: this.token
           }
         })
         .then(data => {
@@ -260,6 +335,13 @@ export default {
         .catch(error => {
           // eslint-disable-next-line
           console.log(error);
+          var gqlError = error.graphQLErrors;
+
+          if (gqlError.length > 0) {
+            if (gqlError[0].message.includes("Invalid token.")) {
+              this.logoutUser();
+            }
+          }
         });
     },
     isSelectedUser(user) {
@@ -300,7 +382,8 @@ export default {
           variables: {
             creator: this.master,
             receipient: receipient,
-            name: chat_name
+            name: chat_name,
+            token: this.token
           }
         })
         .then(data => {
@@ -324,6 +407,7 @@ export default {
       this.message = "";
     },
     sendMessage() {
+      // eslint-disable-next-line
       if (!this.message) {
         return;
       }
@@ -336,7 +420,8 @@ export default {
             sender: this.master,
             message: message,
             individualChatId: this.active_chat.id,
-            groupChatId: ""
+            groupChatId: "",
+            token: this.token
           }
         })
         .then(data => {
@@ -353,7 +438,61 @@ export default {
         var chat_window = document.getElementById("converse");
         chat_window.scrollTop = chat_window.scrollHeight;
       }, 1);
-    }
+    },
+    notifyPopup(fullMessage) {
+      this.$notification.show(
+        fullMessage.sender.name,
+        {
+          body: fullMessage.message
+        },
+        {}
+      );
+    },
+    uploadFile() {
+      var fileToUpload = this.$refs.fileToUpload.files[0]
+      if (fileToUpload) {                      // eslint-disable-next-line
+      console.log(fileToUpload)
+      
+      var reader = new FileReader();
+
+    // Closure to capture the file information.
+    const scope = this
+    reader.onload = (function(theFile) {
+     // eslint-disable-next-line
+      console.log(theFile)
+        return function(e) {
+        scope.$apollo
+          .mutate({
+            mutation: UPLOAD_FILE_MUTATION,
+            variables: {
+              content: e.target.result,
+              filename: fileToUpload,
+              individualChatId: this.active_chat.id,
+              groupChatId: "",
+              token: scope.token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+          });
+        };
+      })(fileToUpload);
+
+      // Read in the image file as a data URL.
+      reader.readAsText(fileToUpload);
+      }
+      // Read in the image file as a data URL.
+
+    
+  },
+  beforeDestroy() {
+    clearInterval(this.refreshing);
+  }
   }
 };
 </script>
