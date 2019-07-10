@@ -18,6 +18,9 @@ export default {
   props: ["chat"],
   computed: {
     name: function() {
+      if (this.chat.__typename === "GroupChat") {
+        return this.chat.name;
+      }
       for (var i = 0; i < this.chat.members.length; i++) {
         if (this.chat.members[i].email != this.$parent.master) {
           return this.chat.members[i].name;

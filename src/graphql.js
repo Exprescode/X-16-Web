@@ -45,6 +45,35 @@ export const GET_INDIVIDUAL_CHATS = gql`
   }
 `;
 
+export const GET_GROUP_CHATS = gql`
+  query($email: String!) {
+    GetGroupChats(email: $email) {
+      id
+      name
+      members {
+        id
+        email
+        name
+      }
+      admins {
+        id
+        email
+        name
+      }
+      messages {
+        id
+        sender {
+          id
+          email
+          name
+        }
+        datetime
+        message
+      }
+    }
+  }
+`;
+
 export const CREATE_CHAT = gql`
   mutation($creator: String!, $receipient: [String]!, $name: String!) {
     CreateChat(creator: $creator, receipient: $receipient, name: $name)
@@ -72,6 +101,35 @@ export const INDIVIDUAL_CHAT_SUB = gql`
     IndividualChatCreated(email: $email) {
       id
       members {
+        id
+        email
+        name
+      }
+      messages {
+        id
+        sender {
+          id
+          email
+          name
+        }
+        datetime
+        message
+      }
+    }
+  }
+`;
+
+export const GROUP_CHAT_SUB = gql`
+  subscription($email: String!) {
+    GroupChatCreated(email: $email) {
+      id
+      name
+      members {
+        id
+        email
+        name
+      }
+      admins {
         id
         email
         name

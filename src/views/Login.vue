@@ -59,8 +59,6 @@ export default {
   },
   methods: {
     getUser() {
-      // eslint-disable-next-line
-      console.log("hey");
       const email = this.email;
       const password = this.password;
       if (email === "" || password === "") {
