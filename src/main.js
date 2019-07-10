@@ -1,7 +1,7 @@
 import { InMemoryCache } from "apollo-cache-inmemory";
 import { ApolloClient } from "apollo-client";
 import { split } from "apollo-link";
-import { HttpLink } from "apollo-link-http";
+//import { HttpLink } from "apollo-link-http";
 import { WebSocketLink } from "apollo-link-ws";
 import { getMainDefinition } from "apollo-utilities";
 import Vue from "vue";
@@ -11,10 +11,12 @@ import router from './router'
 import store from './store'
 import VueNativeNotification from 'vue-native-notification'
 import { VueReCaptcha } from 'vue-recaptcha-v3'
+import { createUploadLink } from 'apollo-upload-client'
+
 
 Vue.config.productionTip = false;
 
-const httpLink = new HttpLink({
+const httpLink = createUploadLink({
   uri: "https://chat.lukeng.io:80/query"
 });
 
@@ -37,7 +39,7 @@ const link = split(
 const apolloClient = new ApolloClient({
   link,
   cache: new InMemoryCache(),
-  connectToDevTools: true
+  connectToDevTools: true,
 });
 
 const apolloProvider = new VueApollo({

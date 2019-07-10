@@ -7,6 +7,7 @@
     </div>
     <div id="subtitle">A new experience awaits!</div>
     <div class="error" v-if="connection_error">Oops! Something went wrong. Please try again later.</div>
+    <div class="error" v-if="captcha_error">Captcha failed. Please try again.</div>
     <div class="error" v-if="password_error">Passwords do not match!</div>
     <div class="error" v-if="email_error">
       Email already exist!
@@ -40,12 +41,6 @@
 import { ADD_USER } from "@/graphql";
 export default {
   name: "Register",
-  created() {
-       window.addEventListener('load', function () {
-      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
-     
-      })
-  },
   data() {
     return {
       email: "",
@@ -54,7 +49,8 @@ export default {
       repassword: "",
       email_error: false,
       connection_error: false,
-      password_error: false
+      password_error: false,
+      captcha_error: false
     };
   },
   methods: {
@@ -62,6 +58,7 @@ export default {
       this.email_error = false;
       this.connection_error = false;
       this.password_error = false;
+      this.captcha_error= false;
     },
     addUser() {
       this.$recaptcha('register').then((token) => {
@@ -86,7 +83,7 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
+          /* eslint-disable */
             console.log(data);
             
             window.sessionStorage.setItem("verify_email", this.email);
@@ -102,7 +99,18 @@ export default {
           .catch(error => {
             // eslint-disable-next-line
             console.log(error);
-            this.email_error = true;
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Captcha failed")) {
+                  this.captcha_error = true
+              } else if (gqlError[0].message.includes("A unique constraint would be violated on User")) {
+                this.email_error = true
+              } 
+            } else {
+              this.connection_error = true
+            }
+            
           });
         })
     },

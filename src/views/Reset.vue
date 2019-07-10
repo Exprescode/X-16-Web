@@ -7,6 +7,7 @@
     </div>
     <div id="subtitle">Don't panic! Stay calm.</div>
     <div class="error" v-if="connection_error">Something went wrong. Please try again later.</div>
+    <div class="error" v-if="captcha_error">Captcha failed. Please try again.</div>
     <div class="error" v-if="email_error">
       Email does not exist!
       <router-link to="/register">
@@ -15,7 +16,7 @@
     </div>
     <div class="group">
       <div class="label">EMAIL</div>
-      <input type="email" spellcheck="false" v-model="email">
+      <input type="email" spellcheck="false" v-model="email" v-on:keyup.enter="reset">
     </div>
     <div class="group">
       <button v-on:click="reset">RESET</button>
@@ -24,39 +25,64 @@
 </template>
 
 <script>
-import axios from "axios";
+import { CHECK_USER_EXISTS_QUERY } from "@/graphql";
+
 export default {
   name: "Reset",
   data() {
     return {
       email: "",
       email_error: false,
-      connection_error: false
+      connection_error: false,
+      captcha_error: false
     };
   },
-  methods: {
+   methods: {
     reset() {
-      this.email_error = false;
-      this.connection_error = false;
-      axios
-        .get("http://45.79.78.80/query", {
-          params: {
-            query: "" //TODO check for email.
-          }
-        })
-        .then(response => {
-          if (response.data.data.GetUser === "") {
-            //TODO if email exist
-            this.$router.replace("/chat");
-          } else {
-            this.email_error = true;
-          }
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          this.connection_error = true;
+                  /* eslint-disable */
+      this.$recaptcha('login').then((token) => {
+        const email = this.email;
+        if (email === "") {
+          this.setMessage("Please type in an email", "message negative");
+          return;
+        }
+        this.$apollo
+          .query({
+            query: CHECK_USER_EXISTS_QUERY,
+            variables: {
+              email: email,
+              token: token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            window.sessionStorage.setItem("reset_email", this.email);
+
+            this.$router.replace({
+              name: "ResetPassword",
+              params: {
+                message: "Please check your email for the verification code!",
+                message_style: "message positive"
+              }
+            });
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+              console.log(error)
+             var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              console.log(gqlError[0].message)
+              if (gqlError[0].message.includes("Captcha failed")) {
+                 this.captcha_error = true
+              } else if (gqlError[0].message.includes("query returned no result")) {
+                this.email_error = true
+              }  
+            } else {
+              this.connection_error = true
+            } 
         });
+      })
     }
   }
 };

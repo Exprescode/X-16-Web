@@ -5,71 +5,91 @@
     <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
       <div class="label" autocomplete>VERIFICATION CODE</div>
-      <input
+      <input  
         v-on:keyup.enter="verifyCode"
         v-model="code"
         required
       >
     </div>
+        <div class="group">
+      <div class="label">PASSWORD</div>
+      <input type="password" v-model="password" required>
+    </div>
+    <div class="group">
+      <div class="label">CONFIRM PASSWORD</div>
+      <input type="password" v-model="repassword" required>
+    </div>
   
     <div class="group">
-      <button v-on:click="verifyCode">VERIFY</button>
+      <button v-on:click="resetPassword">RESET</button>
     </div>
   </form>
 </template>
 
 <script>
-import { SEND_CODE_MUTATION } from "@/graphql";
+import { RESET_PASSWORD_MUTATION } from "@/graphql";
 
 export default {
-  name: "Login",
+  name: "ResetPassword",
   props: ["message", "message_style"],
   data() {
     return {
-      email: window.sessionStorage.getItem("verify_email"),
+      email: window.sessionStorage.getItem("reset_email"),
       code: "",
+      password: "",
+      repassword: "",
       active_message: this.message,
       active_message_style: this.message_style
     };
   },
   methods: {
-    verifyCode() {
+    resetPassword() {
       this.$recaptcha('verify').then((token) => {
         const email = this.email;
-        const code = this.code;
-        if (code == "" ||  email == "") {
-          this.setMessage("Invalid code", "message negative");
+        const password = this.password;
+        const repassword = this.repassword;
+        const code = this.code
+        if (code == "" ||  password == "" || repassword == "") {
+          this.setMessage("Please fill in the blanks", "message negative");
           return;
         }
+        
+        if (password != repassword) {
+          this.setMessage("Your passwords are different", "message negative");
+          return;
+        }
+        
         this.$apollo
           .mutate({
-            mutation: SEND_CODE_MUTATION,
+            mutation: RESET_PASSWORD_MUTATION,
             variables: {
               email: email,
+              password: password,
               code: code,
               token: token
             }
           })
           .then(data => {
-            if (data.data.VerifyCode == "User verified") {
+            window.sessionStorage.removeItem("reset_email");
+            if (data.data.ResetPassword == "Password has been reset") {
               this.$router.replace({
                 name: "Login",
                 params: {
-                  message: "User verified!",
+                  message: "Please login with your new password!",
                   message_style: "message positive"
                 }
             });
-              window.sessionStorage.removeItem("verify_email");
             }
           })
           .catch(error => {
             // eslint-disable-next-line
+            console.log(error)
             var gqlError = error.graphQLErrors
             
             if (gqlError.length > 0) {
               if (gqlError[0].message.includes("Captcha failed")) {
-                  this.setMessage("Captcha failed", "message negative");
-              } else if (gqlError[0].message.includes("Token is invalid")) {
+                this.setMessage("Captcha failed", "message negative");
+              } else if (gqlError[0].message.includes("Verification code is invalid")) {
                 this.setMessage("Your verification code is invalid.", "message negative");
                 
               }else {

@@ -77,6 +77,9 @@
             <img src="../assets/magnifying_glass.png" />
           </button>
           <button v-on:click="sendMessage" id="send">SEND</button>
+            <!--<input type="file" v-on:change="uploadFile" ref="fileToUpload">-->
+          <!--<vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>-->
+
         </div>
       </div>
       <div id="placeholder" v-else>Please select a chat.</div>
@@ -100,7 +103,8 @@ import {
   GET_USERS,
   CREATE_CHAT,
   SEND_MESSAGE,
-  REFRESH_TOKEN_MUTATION
+  REFRESH_TOKEN_MUTATION,
+  UPLOAD_FILE_MUTATION
 } from "@/graphql";
 export default {
   name: "Chat",
@@ -110,6 +114,8 @@ export default {
     PeopleListEntry
   },
   created() {
+              // eslint-disable-next-line
+    console.log("Created chat")
     if (
       !window.sessionStorage.getItem("master_email") ||
       !window.sessionStorage.getItem("jwtToken")
@@ -119,10 +125,11 @@ export default {
       //   name: "Login"
       // });
     }
+    
     window.addEventListener('load', function () {
-      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
-     
-      })
+       document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+    })
+    this.oneRefreshToken()
     this.refreshToken()
     this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
   },
@@ -147,7 +154,8 @@ export default {
       selected_users: [],
       search_chat_list: "",
       search_chat: false,
-      refreshing: null
+      refreshing: null,
+      fileToUpload: []
     };
   },
   apollo: {
@@ -191,6 +199,29 @@ export default {
   },
 
   methods: {
+    oneRefreshToken() {
+       this.$apollo
+          .mutate({
+            mutation: REFRESH_TOKEN_MUTATION,
+            variables: {
+              email: this.master,
+              token: this.token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
+          })
+          .catch(error => {
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.logoutUser();
+              }
+            }
+          });
+    },
     refreshToken() {
       this.refreshing = setInterval(() => {
         // eslint-disable-next-line
@@ -354,23 +385,52 @@ export default {
         },
         {}
       );
-    }
+    },
+    uploadFile() {
+      var fileToUpload = this.$refs.fileToUpload.files[0]
+      if (fileToUpload) {                      // eslint-disable-next-line
+      console.log(fileToUpload)
+      
+      var reader = new FileReader();
 
-    // async sendMessage() {
-    //   const message = this.message;
-    //   this.message = "";
+    // Closure to capture the file information.
+    const scope = this
+    reader.onload = (function(theFile) {
+     // eslint-disable-next-line
+      console.log(theFile)
+        return function(e) {
+        scope.$apollo
+          .mutate({
+            mutation: UPLOAD_FILE_MUTATION,
+            variables: {
+              content: e.target.result,
+              filename: fileToUpload,
+              individualChatId: this.active_chat.id,
+              groupChatId: "",
+              token: scope.token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+          });
+        };
+      })(fileToUpload);
 
-    //   await this.$apollo.mutate({
-    //     mutation: SEND_MESSAGE_MUTATION,
-    //     variables: {
-    //       from: this.username,
-    //       message
-    //     }
-    //   });
-    // }
+      // Read in the image file as a data URL.
+      reader.readAsText(fileToUpload);
+      }
+      // Read in the image file as a data URL.
+
+    
   },
   beforeDestroy() {
     clearInterval(this.refreshing);
+  }
   }
 };
 </script>

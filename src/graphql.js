@@ -118,6 +118,20 @@ export const MESSAGE_SENT_SUBSCRIPTION = gql`
   }
 `;
 
+export const CHECK_USER_EXISTS_QUERY = gql`
+  query($email: String!, $token: String!) {
+    CheckUserExists(email: $email, captchaToken: $token)
+  }
+`;
+
+
+export const RESET_PASSWORD_MUTATION = gql`
+  mutation ResetPasswordMutation($email: String!, $password: String!, $code: String!, $token: String!) {
+    ResetPassword(email: $email, password: $password, code: $code, captchaToken: $token) 
+  }
+`;
+
+
 export const REFRESH_TOKEN_MUTATION = gql`
   mutation RefreshTokenMutation($email: String!, $token: String!) {
     RefreshToken(email: $email, jwtToken: $token) 
@@ -125,12 +139,13 @@ export const REFRESH_TOKEN_MUTATION = gql`
 `;
 
 
-export const CREATE_FILE_MUTATION = gql`
-    mutation UploadSingleFileMutation($file: Upload!, $token: String!) {
-      UploadSingleFile(file: $file, jwtToken: $token) {
+export const UPLOAD_FILE_MUTATION = gql`
+    mutation UploadSingleFileMutation($filename: String!, $filesize: Int!, $content: String!, $individualChatId: String!, $groupChatId: String!, $jwtToken: String!) {
+      UploadSingleFile(filename: $filename, filesize: $filesize, content: $content, individualChatId: $individualChatId, groupChatId: $groupChatId, jwtToken: $jwtToken) {
         id
         filename
       }
     }
 
 `;
+

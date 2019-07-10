@@ -5,6 +5,7 @@ import Register from "./views/Register.vue";
 import Reset from "./views/Reset.vue";
 import Chat from "./views/Chat.vue";
 import Verify from "./views/Verify.vue"
+import ResetPassword from "./views/ResetPassword.vue"
 
 Vue.use(Router);
 
@@ -35,6 +36,11 @@ export default new Router({
       path: "/verify",
       name: "Verify",
       component: Verify
+    },
+    {
+      path: "/resetpassword",
+      name: "ResetPassword",
+      component: ResetPassword
     },
   ]
 });

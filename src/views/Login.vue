@@ -50,10 +50,13 @@ import { GET_USER } from "@/graphql";
 export default {
   name: "Login",
   props: ["message", "message_style"],
-  created() {
-    window.addEventListener('load', function () {
-      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "visible"
-    })
+  created(){
+    if (window.sessionStorage.getItem("master_email") && window.sessionStorage.getItem(("jwtToken"))) {
+      if (document.getElementsByClassName('grecaptcha-badge').length > 0) {
+         document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+      }
+      this.$router.replace("/chat");
+    }
   },
   data() {
     return {
@@ -65,10 +68,12 @@ export default {
   },
   methods: {
     getUser() {
+                  /* eslint-disable */
       this.$recaptcha('login').then((token) => {
         const email = this.email;
         const password = this.password;
         if (email === "" || password === "") {
+          console.log(email, password)
           this.setMessage("Invalid email or password!", "message negative");
           return;
         }
