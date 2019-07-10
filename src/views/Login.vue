@@ -1,5 +1,5 @@
 <template>
-  <form id="form">
+  <div id="form">
     <div id="title">X-16</div>
     <div id="subtitle">Fueled up and ready to fly!</div>
     <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
@@ -41,7 +41,7 @@
         </div>
       </div>
     </div>
-  </form>
+  </div>
 </template>
 
 <script>

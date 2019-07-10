@@ -91,7 +91,6 @@ export const INDIVIDUAL_CHAT_SUB = gql`
     }
   }
 `;
-
 export const SEND_MESSAGE_MUTATION = gql`
   mutation SendMessageMutation($from: String!, $message: String!, $token: String!) {
     sendMessage(from: $from, message: $message, jwtToken: $token) {
@@ -148,4 +147,3 @@ export const UPLOAD_FILE_MUTATION = gql`
     }
 
 `;
-
