@@ -76,27 +76,6 @@ export default {
         this.setMessage("Invalid email or password!", "message negative");
         return;
       }
-      this.$apollo
-        .query({
-          query: GET_USER,
-          variables: {
-            email: email,
-            password: password
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.$router.replace("/chat");
-          window.sessionStorage.setItem("master_email", this.email);
-          window.sessionStorage.setItem("jwtToken", data.data.GetUser);
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          this.setMessage("Invalid email or password!", "message negative");
-          return;
-        }
         this.$apollo
           .query({
             query: GET_USER,
@@ -108,15 +87,17 @@ export default {
           })
           .then(data => {
             // eslint-disable-next-line
-              this.$router.replace("/chat");
-              document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
-              window.sessionStorage.setItem("master_email", this.email);
-              window.sessionStorage.setItem("jwtToken", data.data.GetUser);
+            console.log(data.data)
+            this.$router.replace("/chat");
+            document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+            window.sessionStorage.setItem("master_email", this.email);
+            window.sessionStorage.setItem("jwtToken", data.data.GetUser);
+            
           })
           .catch(error => {
             // eslint-disable-next-line
               console.log(error)
-             var gqlError = error.graphQLErrors;
+            var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {
               if (gqlError[0].message.includes("Captcha failed")) {

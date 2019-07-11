@@ -85,16 +85,17 @@ export default {
           .then(data => {
           /* eslint-disable */
             console.log(data);
+            if (data.data.SignUpUser == "User registered") {
+              window.sessionStorage.setItem("verify_email", this.email);
             
-            window.sessionStorage.setItem("verify_email", this.email);
-            
-            this.$router.replace({
-              name: "Verify",
-              params: {
-                message: "Please check your email for the verification code!",
-                message_style: "message positive"
-              }
-            });
+              this.$router.replace({
+                name: "Verify",
+                params: {
+                  message: "Please check your email for the verification code!",
+                  message_style: "message positive"
+                }
+              });
+            }
           })
           .catch(error => {
             // eslint-disable-next-line

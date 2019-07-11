@@ -46,8 +46,8 @@ export const GET_INDIVIDUAL_CHATS = gql`
 `;
 
 export const GET_GROUP_CHATS = gql`
-  query($email: String!) {
-    GetGroupChats(email: $email) {
+  query($email: String!, $token: String!) {
+    GetGroupChats(email: $email, jwtToken: $token) {
       id
       name
       members {
@@ -169,7 +169,7 @@ export const REFRESH_TOKEN_MUTATION = gql`
 
 
 export const UPLOAD_FILE_MUTATION = gql`
-    mutation UploadSingleFileMutation($filename: String!, $filesize: Int!, $content: String!, $individualChatId: String!, $groupChatId: String!, $jwtToken: String!) {
+    mutation UploadSingleFileMutation($filename: String!, $filesize: Int!, $content: [Int!]!, $individualChatId: String!, $groupChatId: String!, $jwtToken: String!) {
       UploadSingleFile(filename: $filename, filesize: $filesize, content: $content, individualChatId: $individualChatId, groupChatId: $groupChatId, jwtToken: $jwtToken) {
         id
         filename
