@@ -1,6 +1,6 @@
 <template>
   <div class="entry" v-on:click="selected">
-    <div v-bind:class="profile_color">{{initial}}</div>
+    <div v-bind:class="profile">{{initial}}</div>
     <div class="content">
       <div class="name">{{name}}</div>
       <div class="message" v-show="message">{{sender}}: {{message}}</div>
@@ -43,7 +43,11 @@ export default {
       }
       return this.chat.messages[this.chat.messages.length - 1].sender.name;
     },
-    profile_color: function() {
+    profile: function() {
+      var shape =
+        this.chat.__typename === "IndividualChat"
+          ? "profile_individual"
+          : "profile_group";
       var color_index = this.chat.id.charCodeAt(this.chat.id.length - 1) % 6;
       var colors = [
         "profile_red",
@@ -53,7 +57,7 @@ export default {
         "profile_indigo",
         "profile_violet"
       ];
-      return "profile " + colors[color_index];
+      return "profile " + shape + " " + colors[color_index];
     }
   },
   mounted() {
@@ -90,7 +94,7 @@ export default {
           // eslint-disable-next-line
           console.log(context.chat.id);
           context.chat.messages.push(data.data.MessageSent);
-          context.$parent.notifyPopup(data.data.MessageSent)
+          context.$parent.notifyPopup(data.data.MessageSent);
           context.$parent.setScrollPosition();
         },
         error(error) {
@@ -100,39 +104,6 @@ export default {
           console.log(error);
         }
       });
-    // this.$apollo.addSmartSubscription({
-    //   document: gql`
-    //     subscription($chatId: String!, $chatType: String!, $sender: String!) {
-    //       MessageSent(chatId: $chatId, chatType: $chatType, sender: $sender) {
-    //         id
-    //         sender {
-    //           id
-    //           email
-    //           name
-    //         }
-    //         datetime
-    //         message
-    //       }
-    //     }
-    //   `,
-    //   variables() {
-    //     return {
-    //       chatId: this.chat.id,
-    //       chatType: this.chat.__typename,
-    //       sender: this.chat.members[0].email
-    //     };
-    //   },
-    //   result(data) {
-    //     // eslint-disable-next-line
-    //     console.log(data);
-    //     this.chat.messages.push(data);
-    //   }
-    // });
-    // this.chat_subscriptions = [];
-    // for (var i = 0; i < this.chat.members.length; i++) {
-    //   // eslint-disable-next-line
-    //   console.log(this.chat.id + ":" + this.chat.members[i].name);
-    // }
   },
   methods: {
     selected() {
@@ -142,8 +113,7 @@ export default {
     },
     setSubscription(sender) {
       sender;
-    },    
-
+    }
   }
 };
 </script>

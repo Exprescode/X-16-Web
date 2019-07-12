@@ -22,7 +22,7 @@
         <button v-on:click="logoutUser">
           <img src="../assets/door.png">Logout
         </button>
-        <button>
+        <button v-on:click="setDrawerState('settings')">
           <img src="../assets/gear.png">Settings
         </button>
         <button v-on:click="setDrawerState('add-chat')">
@@ -48,6 +48,43 @@
         </button>
         <button v-on:click="cancelCreateChat">
           <img src="../assets/cross_2.png">Cancel
+        </button>
+      </div>
+      <div id="drawer_settings" v-show="drawer_state === 'settings'">
+        <div id="people_list">
+          <div class="entry">
+            <div class="profile profile_red">H</div>
+            <div class="content">
+              <div class="name">Henry</div>
+              <div class="email">henry@sample.com</div>
+            </div>
+          </div>
+        </div>
+        <div id="group_name">
+          <div id="label">Chat Name</div>
+          <input type="text" value="New Group">
+        </div>
+        <div id="user">
+          <div id="profile">
+            <div class="profile_blue" id="preview">S</div>
+            <button>EDIT</button>
+          </div>
+          <div id="identity">
+            <div id="name">
+              <div class="label">Name</div>
+              <input type="text" value="Sam">
+            </div>
+            <div id="password">
+              <div class="label">Password</div>
+              <input type="password" placeholder="New Password">
+            </div>
+          </div>
+        </div>
+        <button class="tick_cross">
+          <img src="img/tick.png">Done
+        </button>
+        <button class="tick_cross">
+          <img src="img/cross_2.png">Cancel
         </button>
       </div>
     </div>
@@ -239,7 +276,6 @@ export default {
     },
     refreshToken() {
       this.refreshing = setInterval(() => {
-        // eslint-disable-next-line
         this.$apollo
           .mutate({
             mutation: REFRESH_TOKEN_MUTATION,
@@ -249,7 +285,6 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
             window.sessionStorage.setItem("jwtToken", data.data.RefreshToken);
           })
           .catch(error => {
@@ -404,20 +439,29 @@ export default {
       this.message = "";
     },
     sendMessage() {
-      // eslint-disable-next-line
       if (!this.message) {
         return;
       }
       const message = this.message;
       this.message = "";
+      var individual_chat_id =
+        this.active_chat.__typename === "IndividualChat"
+          ? this.active_chat.id
+          : "";
+      var group_chat_id =
+        this.active_chat.__typename === "GroupChat" ? this.active_chat.id : "";
+      // // eslint-disable-next-line
+      // console.log("individual_chat_id: " + individual_chat_id);
+      // // eslint-disable-next-line
+      // console.log("group_chat_id: " + group_chat_id);
       this.$apollo
         .mutate({
           mutation: SEND_MESSAGE,
           variables: {
             sender: this.master,
             message: message,
-            individualChatId: this.active_chat.id,
-            groupChatId: "",
+            individualChatId: individual_chat_id,
+            groupChatId: group_chat_id,
             token: this.token
           }
         })
@@ -538,7 +582,6 @@ export default {
 #left_panel #chat_list .entry .profile {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -548,6 +591,14 @@ export default {
   font-size: 20px;
   color: white;
   flex: none;
+}
+
+.profile_individual {
+  border-radius: 50%;
+}
+
+.profile_group {
+  border-radius: 20%;
 }
 
 .profile_violet {
