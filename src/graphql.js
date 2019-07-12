@@ -7,8 +7,18 @@ export const GET_USER = gql`
 `;
 
 export const ADD_USER = gql`
-  mutation($email: String!, $name: String!, $password: String!, $token: String!) {
-    SignUpUser(email: $email, name: $name, password: $password, captchaToken: $token)
+  mutation(
+    $email: String!
+    $name: String!
+    $password: String!
+    $token: String!
+  ) {
+    SignUpUser(
+      email: $email
+      name: $name
+      password: $password
+      captchaToken: $token
+    )
   }
 `;
 
@@ -46,8 +56,8 @@ export const GET_INDIVIDUAL_CHATS = gql`
 `;
 
 export const GET_GROUP_CHATS = gql`
-  query($email: String!) {
-    GetGroupChats(email: $email) {
+  query($email: String!, $token: String!) {
+    GetGroupChats(email: $email, jwtToken: $token) {
       id
       name
       members {
@@ -75,24 +85,34 @@ export const GET_GROUP_CHATS = gql`
 `;
 
 export const CREATE_CHAT = gql`
-  mutation($creator: String!, $receipient: [String]!, $name: String!, $token: String!) {
-    CreateChat(creator: $creator, receipient: $receipient, name: $name, jwtToken: $token)
+  mutation(
+    $creator: String!
+    $receipient: [String]!
+    $name: String!
+    $token: String!
+  ) {
+    CreateChat(
+      creator: $creator
+      receipient: $receipient
+      name: $name
+      jwtToken: $token
+    )
   }
 `;
 
 export const SEND_MESSAGE = gql`
   mutation(
-    $sender: String!,
-    $message: String!,
-    $individualChatId: String!,
-    $groupChatId: String!,
+    $sender: String!
+    $message: String!
+    $individualChatId: String!
+    $groupChatId: String!
     $token: String!
   ) {
     SendMessage(
-      sender: $sender,
-      message: $message,
-      individualChatId: $individualChatId,
-      groupChatId: $groupChatId,
+      sender: $sender
+      message: $message
+      individualChatId: $individualChatId
+      groupChatId: $groupChatId
       jwtToken: $token
     )
   }
@@ -122,7 +142,11 @@ export const INDIVIDUAL_CHAT_SUB = gql`
 `;
 
 export const SEND_MESSAGE_MUTATION = gql`
-  mutation SendMessageMutation($from: String!, $message: String!, $token: String!) {
+  mutation SendMessageMutation(
+    $from: String!
+    $message: String!
+    $token: String!
+  ) {
     sendMessage(from: $from, message: $message, jwtToken: $token) {
       id
       from
@@ -133,7 +157,7 @@ export const SEND_MESSAGE_MUTATION = gql`
 
 export const SEND_CODE_MUTATION = gql`
   mutation SendCodeMutation($email: String!, $code: String!, $token: String!) {
-    VerifyCode(email: $email, code: $code, captchaToken: $token) 
+    VerifyCode(email: $email, code: $code, captchaToken: $token)
   }
 `;
 
@@ -153,28 +177,50 @@ export const CHECK_USER_EXISTS_QUERY = gql`
   }
 `;
 
-
 export const RESET_PASSWORD_MUTATION = gql`
-  mutation ResetPasswordMutation($email: String!, $password: String!, $code: String!, $token: String!) {
-    ResetPassword(email: $email, password: $password, code: $code, captchaToken: $token) 
+  mutation ResetPasswordMutation(
+    $email: String!
+    $password: String!
+    $code: String!
+    $token: String!
+  ) {
+    ResetPassword(
+      email: $email
+      password: $password
+      code: $code
+      captchaToken: $token
+    )
   }
 `;
-
 
 export const REFRESH_TOKEN_MUTATION = gql`
   mutation RefreshTokenMutation($email: String!, $token: String!) {
-    RefreshToken(email: $email, jwtToken: $token) 
+    RefreshToken(email: $email, jwtToken: $token)
   }
 `;
 
-
 export const UPLOAD_FILE_MUTATION = gql`
-    mutation UploadSingleFileMutation($filename: String!, $filesize: Int!, $content: String!, $individualChatId: String!, $groupChatId: String!, $jwtToken: String!) {
-      UploadSingleFile(filename: $filename, filesize: $filesize, content: $content, individualChatId: $individualChatId, groupChatId: $groupChatId, jwtToken: $jwtToken) {
-        id
-        filename
-      }
-    }`;
+  mutation UploadSingleFileMutation(
+    $filename: String!
+    $filesize: Int!
+    $content: String!
+    $individualChatId: String!
+    $groupChatId: String!
+    $jwtToken: String!
+  ) {
+    UploadSingleFile(
+      filename: $filename
+      filesize: $filesize
+      content: $content
+      individualChatId: $individualChatId
+      groupChatId: $groupChatId
+      jwtToken: $jwtToken
+    ) {
+      id
+      filename
+    }
+  }
+`;
 
 export const GROUP_CHAT_SUB = gql`
   subscription($email: String!) {
