@@ -50,10 +50,15 @@ import { GET_USER } from "@/graphql";
 export default {
   name: "Login",
   props: ["message", "message_style"],
-  created(){
-    if (window.sessionStorage.getItem("master_email") && window.sessionStorage.getItem(("jwtToken"))) {
-      if (document.getElementsByClassName('grecaptcha-badge').length > 0) {
-         document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
+  created() {
+    if (
+      window.sessionStorage.getItem("master_email") &&
+      window.sessionStorage.getItem("jwtToken")
+    ) {
+      if (document.getElementsByClassName("grecaptcha-badge").length > 0) {
+        document.getElementsByClassName(
+          "grecaptcha-badge"
+        )[0].style.visibility = "collapse";
       }
       this.$router.replace("/chat");
     }
@@ -68,32 +73,9 @@ export default {
   },
   methods: {
     getUser() {
-                  /* eslint-disable */
-      this.$recaptcha('login').then((token) => {
-      const email = this.email;
-      const password = this.password;
-      if (email === "" || password === "") {
-        this.setMessage("Invalid email or password!", "message negative");
-        return;
-      }
-      this.$apollo
-        .query({
-          query: GET_USER,
-          variables: {
-            email: email,
-            password: password
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.$router.replace("/chat");
-          window.sessionStorage.setItem("master_email", this.email);
-          window.sessionStorage.setItem("jwtToken", data.data.GetUser);
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+        const email = this.email;
+        const password = this.password;
+        if (email === "" || password === "") {
           this.setMessage("Invalid email or password!", "message negative");
           return;
         }
@@ -103,30 +85,36 @@ export default {
             variables: {
               email: email,
               password: password,
-              token: token
+              token: "" // TODO: Token variable goes here.
             }
           })
           .then(data => {
             // eslint-disable-next-line
-              this.$router.replace("/chat");
-              document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
-              window.sessionStorage.setItem("master_email", this.email);
-              window.sessionStorage.setItem("jwtToken", data.data.GetUser);
+            console.log(data);
+            this.$router.replace("/chat");
+            document.getElementsByClassName(
+              "grecaptcha-badge"
+            )[0].style.visibility = "collapse";
+            window.sessionStorage.setItem("master_email", this.email);
+            window.sessionStorage.setItem("jwtToken", data.data.GetUser);
           })
           .catch(error => {
             // eslint-disable-next-line
-              console.log(error)
-             var gqlError = error.graphQLErrors;
+            console.log(error);
+            var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {
               if (gqlError[0].message.includes("Captcha failed")) {
-                  this.setMessage("Captcha failed", "message negative");
+                this.setMessage("Captcha failed", "message negative");
               } else if (gqlError[0].message.includes("User not verified")) {
                 this.$router.replace("/verify");
                 window.sessionStorage.setItem("verify_email", this.email);
-              }else {
-                this.setMessage("Invalid email or password!", "message negative");
-              }  
+              } else {
+                this.setMessage(
+                  "Invalid email or password!",
+                  "message negative"
+                );
+              }
             } else {
               this.setMessage("An error occured", "message negative");
             }
@@ -135,14 +123,12 @@ export default {
             //   "Something went wrong. Please try again later.",
             //   "message negative"
             // );
-        });
-      })
-    }
-   ,
+          });
+    },
     setMessage(message, message_style) {
       this.active_message = message;
       this.active_message_style = message_style;
-    },
+    }
   }
 };
 </script>
@@ -263,5 +249,4 @@ export default {
 #form .negative {
   color: red;
 }
-
 </style>
