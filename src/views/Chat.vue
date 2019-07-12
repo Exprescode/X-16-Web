@@ -6,32 +6,32 @@
       </div>
       <div id="toolbar">
         <button class="menu" v-on:click="setDrawerState('lobby')">
-          <img src="../assets/menu.png" />
+          <img src="../assets/menu.png">
         </button>
         <div class="search">
-          <input type="text" placeholder="Search" v-model="search_chat_list" />
+          <input type="text" placeholder="Search" v-model="search_chat_list">
           <button v-show="search_chat_list" v-on:click="clearSearchChatList">
-            <img src="../assets/cross.png" />
+            <img src="../assets/cross.png">
           </button>
         </div>
       </div>
       <div id="drawer" v-show="drawer_state === 'lobby'">
         <button v-on:click="setDrawerState('')">
-          <img src="../assets/cross_2.png" />Close
+          <img src="../assets/cross_2.png">Close
         </button>
         <button v-on:click="logoutUser">
-          <img src="../assets/door.png" />Logout
+          <img src="../assets/door.png">Logout
         </button>
-        <button>
-          <img src="../assets/gear.png" />Settings
+        <button v-on:click="setDrawerState('settings')">
+          <img src="../assets/gear.png">Settings
         </button>
         <button v-on:click="setDrawerState('add-chat')">
-          <img src="../assets/plus.png" />New Chat
+          <img src="../assets/plus.png">New Chat
         </button>
       </div>
       <div id="drawer_new_chat" v-show="drawer_state === 'add-chat'">
         <div id="people_list">
-          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id" />
+          <PeopleListEntry v-for="user in users" v-bind:user="user" v-bind:key="user.id"/>
         </div>
         <div id="search">
           <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
@@ -44,10 +44,47 @@
           <span>{{selected_users.length}}</span> Selected
         </div>
         <button v-on:click="createChat" v-bind:disabled="selected_users.length < 1">
-          <img src="../assets/plus.png" />Create
+          <img src="../assets/plus.png">Create
         </button>
         <button v-on:click="cancelCreateChat">
-          <img src="../assets/cross_2.png" />Cancel
+          <img src="../assets/cross_2.png">Cancel
+        </button>
+      </div>
+      <div id="drawer_settings" v-show="drawer_state === 'settings'">
+        <div id="people_list">
+          <div class="entry">
+            <div class="profile profile_red">H</div>
+            <div class="content">
+              <div class="name">Henry</div>
+              <div class="email">henry@sample.com</div>
+            </div>
+          </div>
+        </div>
+        <div id="group_name">
+          <div id="label">Chat Name</div>
+          <input type="text" value="New Group">
+        </div>
+        <div id="user">
+          <div id="profile">
+            <div class="profile_blue" id="preview">S</div>
+            <button>EDIT</button>
+          </div>
+          <div id="identity">
+            <div id="name">
+              <div class="label">Name</div>
+              <input type="text" value="Sam">
+            </div>
+            <div id="password">
+              <div class="label">Password</div>
+              <input type="password" placeholder="New Password">
+            </div>
+          </div>
+        </div>
+        <button class="tick_cross">
+          <img src="img/tick.png">Done
+        </button>
+        <button class="tick_cross">
+          <img src="img/cross_2.png">Cancel
         </button>
       </div>
     </div>
@@ -69,13 +106,13 @@
               v-model="message"
               v-on:keyup.enter="sendMessage"
               spellcheck="false"
-            />
+            >
             <button v-show="search_chat && message" v-on:click="clearSearchChat">
-              <img src="../assets/cross.png" />
+              <img src="../assets/cross.png">
             </button>
           </div>
           <button id="search">
-            <img src="../assets/magnifying_glass.png" />
+            <img src="../assets/magnifying_glass.png">
           </button>
           <button v-on:click="sendMessage" id="send">SEND</button>
           <button v-on:click="openModal('uploadModal')" id="upload">UPLOAD</button>
@@ -88,7 +125,6 @@
               <button v-on:click="uploadFile" id="upload">UPLOAD</button>
             </div>
           </div>
-
         </div>
       </div>
       <div id="placeholder" v-else>Please select a chat.</div>
@@ -131,12 +167,13 @@ export default {
     ) {
       this.logoutUser()
     }
-    
-    window.addEventListener('load', function () {
-       document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "collapse"
-    })
-    this.oneRefreshToken()
-    this.refreshToken()
+
+    window.addEventListener("load", function() {
+      document.getElementsByClassName("grecaptcha-badge")[0].style.visibility =
+        "collapse";
+    });
+    this.oneRefreshToken();
+    this.refreshToken();
     this.debouncedGetUsers = _.debounce(this.getUsers, 1000);
   },
   computed: {
@@ -232,26 +269,26 @@ export default {
 
   methods: {
     oneRefreshToken() {
-       this.$apollo
-          .mutate({
-            mutation: REFRESH_TOKEN_MUTATION,
-            variables: {
-              email: this.master,
-              token: this.token
+      this.$apollo
+        .mutate({
+          mutation: REFRESH_TOKEN_MUTATION,
+          variables: {
+            email: this.master,
+            token: this.token
+          }
+        })
+        .then(data => {
+          // eslint-disable-next-line
+          window.sessionStorage.setItem("jwtToken", data.data.RefreshToken);
+        })
+        .catch(error => {
+          var gqlError = error.graphQLErrors;
+          if (gqlError.length > 0) {
+            if (gqlError[0].message.includes("Invalid token.")) {
+              this.logoutUser();
             }
-          })
-          .then(data => {
-            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
-          })
-          .catch(error => {
-            var gqlError = error.graphQLErrors;
-
-            if (gqlError.length > 0) {
-              if (gqlError[0].message.includes("Invalid token.")) {
-                this.logoutUser();
-              }
-            }
-          });
+          }
+        });
     },
     refreshToken() {
       this.refreshing = setInterval(() => {
@@ -264,7 +301,7 @@ export default {
             }
           })
           .then(data => {
-            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
+            window.sessionStorage.setItem("jwtToken", data.data.RefreshToken);
           })
           .catch(error => {
             var gqlError = error.graphQLErrors;
@@ -319,7 +356,8 @@ export default {
       this.drawer_state = state;
     },
     logoutUser() {
-      document.getElementsByClassName('grecaptcha-badge')[0].style.visibility = "visible"
+      document.getElementsByClassName("grecaptcha-badge")[0].style.visibility =
+        "visible";
       window.sessionStorage.removeItem("master_email");
       window.sessionStorage.removeItem("jwtToken");
       this.$router.replace("/");
@@ -420,14 +458,24 @@ export default {
       }
       const message = this.message;
       this.message = "";
+      var individual_chat_id =
+        this.active_chat.__typename === "IndividualChat"
+          ? this.active_chat.id
+          : "";
+      var group_chat_id =
+        this.active_chat.__typename === "GroupChat" ? this.active_chat.id : "";
+      // // eslint-disable-next-line
+      // console.log("individual_chat_id: " + individual_chat_id);
+      // // eslint-disable-next-line
+      // console.log("group_chat_id: " + group_chat_id);
       this.$apollo
         .mutate({
           mutation: SEND_MESSAGE,
           variables: {
             sender: this.master,
             message: message,
-            individualChatId: this.active_chat.id,
-            groupChatId: "",
+            individualChatId: individual_chat_id,
+            groupChatId: group_chat_id,
             token: this.token
           }
         })
@@ -593,7 +641,6 @@ export default {
 #left_panel #chat_list .entry .profile {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
   margin: 0;
   padding: 0;
   text-align: center;
@@ -603,6 +650,14 @@ export default {
   font-size: 20px;
   color: white;
   flex: none;
+}
+
+.profile_individual {
+  border-radius: 50%;
+}
+
+.profile_group {
+  border-radius: 20%;
 }
 
 .profile_violet {
