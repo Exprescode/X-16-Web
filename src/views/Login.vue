@@ -68,8 +68,8 @@ export default {
   },
   methods: {
     getUser() {
-                  /* eslint-disable */
-      this.$recaptcha('login').then((token) => {
+      var token = ""
+      // this.$recaptcha('login').then((token) => {
       const email = this.email;
       const password = this.password;
       if (email === "" || password === "") {
@@ -112,12 +112,8 @@ export default {
               this.setMessage("An error occured", "message negative");
             }
             this.password = "";
-            // this.setMessage(
-            //   "Something went wrong. Please try again later.",
-            //   "message negative"
-            // );
         });
-      })
+      // })
     }
    ,
     setMessage(message, message_style) {

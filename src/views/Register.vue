@@ -61,7 +61,8 @@ export default {
       this.captcha_error= false;
     },
     addUser() {
-      this.$recaptcha('register').then((token) => {
+        var token = ""
+      // this.$recaptcha('register').then((token) => {
         this.clearError();
         if (this.password != this.repassword) {
           this.password_error = true;
@@ -113,7 +114,7 @@ export default {
             }
             
           });
-        })
+        // })
     },
   }
 };

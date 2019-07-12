@@ -78,16 +78,15 @@
             <img src="../assets/magnifying_glass.png" />
           </button>
           <button v-on:click="sendMessage" id="send">SEND</button>
-          <button v-on:click="openModal" id="upload">UPLOAD</button>
+          <button v-on:click="openModal('uploadModal')" id="upload">UPLOAD</button>
           <button v-on:click="downloadFile" id="download">DOWNLOAD</button>
-          <div id="myModal" class="modal">
-          
-            <!-- Modal content -->
+          <div id="uploadModal" class="modal">
             <div class="modal-content">
+              <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
               <vue-dropzone ref="filesToUpload" id="dropzone" :options="dropzoneOptions"></vue-dropzone>
+              <br/>
               <button v-on:click="uploadFile" id="upload">UPLOAD</button>
             </div>
-          
           </div>
 
         </div>
@@ -126,15 +125,11 @@ export default {
      vueDropzone: vue2Dropzone
   },
   created() {
-              // eslint-disable-next-line
     if (
       !window.sessionStorage.getItem("master_email") ||
       !window.sessionStorage.getItem("jwtToken")
     ) {
       this.logoutUser()
-      // this.$router.replace({
-      //   name: "Login"
-      // });
     }
     
     window.addEventListener('load', function () {
@@ -155,8 +150,6 @@ export default {
   watch: {
     search_users: function() {
       this.debouncedGetUsers();
-      // if (this.search_users.match(/^.+@.+\.+$/)) {
-      // }
     }
   },
   data() {
@@ -178,10 +171,10 @@ export default {
       fileToUpload: [],
       dropzoneOptions: {
           url: 'https://httpbin.org/post',
-          thumbnailWidth: 150,
-          maxFilesize: 0.5,
-          headers: { "My-Awesome-Header": "header value" }
-      }
+          addRemoveLinks: true,
+      },
+      active_message: this.message,
+      active_message_style: this.message_style
     };
   },
   apollo: {
@@ -248,7 +241,6 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
             window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
           })
           .catch(error => {
@@ -263,7 +255,6 @@ export default {
     },
     refreshToken() {
       this.refreshing = setInterval(() => {
-        // eslint-disable-next-line
         this.$apollo
           .mutate({
             mutation: REFRESH_TOKEN_MUTATION,
@@ -273,7 +264,6 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
             window.sessionStorage.setItem("jwtToken", data.data.RefreshToken)
           })
           .catch(error => {
@@ -348,8 +338,6 @@ export default {
           }
         })
         .then(data => {
-          /* eslint-disable */
-          // console.log(data);
           this.users = data.data.GetUsers;
         })
         .catch(error => {
@@ -427,7 +415,6 @@ export default {
       this.message = "";
     },
     sendMessage() {
-      // eslint-disable-next-line
       if (!this.message) {
         return;
       }
@@ -468,87 +455,91 @@ export default {
         {}
       );
     },
-    openModal() {
-      var modal = document.getElementById("myModal");
+    openModal(modalId) {
+      var modal = document.getElementById(modalId);
       modal.style.display = "block";
-
-      // Get the <span> element that closes the modal
-      var span = document.getElementsByClassName("close")[0];
-
-      // When the user clicks anywhere outside of the modal, close it
+      
+      
+      const scope = this
+      
       window.onclick = function(event) {
         if (event.target == modal) {
+          scope.setMessage("", "")
           modal.style.display = "none";
         }
       }
     },
     uploadFile() {
-      //this.$refs.myVueDropzone.processQueue()
       var filesToUpload = this.$refs.filesToUpload.getAcceptedFiles()
       
-      if (filesToUpload) {                      // eslint-disable-next-line
-      
-      for (var i = 0; i < filesToUpload.length; ++i) {
-        var fileToUpload = filesToUpload[i]
-        var reader = new FileReader();
-
-        const scope = this
-        reader.onload = (function() {
-            return function(e) {
-              var raw = e.target.result
-              
-              var rawBytes = new Uint8Array(raw);
-              var hex = [];
-              for (var cycle = 0 ; cycle < raw.byteLength ; cycle++) {
-                hex.push(rawBytes[cycle]);
-              }
-            scope.$apollo
-              .mutate({
-                mutation: UPLOAD_FILE_MUTATION,
-                variables: {
-                  content: hex,
-                  filename: fileToUpload.name,
-                  filesize: fileToUpload.size,
-                  individualChatId: scope.active_chat.id,
-                  groupChatId: "",
-                  jwtToken: scope.token
+      if (filesToUpload.length > 0) {
+        for (var i = 0; i < filesToUpload.length; ++i) {
+          var fileToUpload = filesToUpload[i]
+          var reader = new FileReader();
+  
+          const scope = this
+          reader.onload = (function() {
+              return function(e) {
+                var raw = e.target.result
+                
+                var rawBytes = new Uint8Array(raw);
+                var hex = [];
+                for (var cycle = 0 ; cycle < raw.byteLength ; cycle++) {
+                  hex.push(rawBytes[cycle]);
                 }
-              })
-              .then(data => {
-                // eslint-disable-next-line
-                console.log(data);
-              })
-              .catch(error => {
-                // eslint-disable-next-line
-                console.log(error);
-              });
-            };
-          })(fileToUpload);
-          
-          reader.readAsArrayBuffer(fileToUpload);
-          this.$refs.filesToUpload.removeAllFiles()
-          }
+                scope.$apollo
+                .mutate({
+                    mutation: UPLOAD_FILE_MUTATION,
+                    variables: {
+                      content: hex,
+                      filename: fileToUpload.name,
+                      filesize: fileToUpload.size,
+                      individualChatId: scope.active_chat.id,
+                      groupChatId: "",
+                      jwtToken: scope.token
+                    }
+                })
+                .then(data => {
+                  // eslint-disable-next-line
+                  console.log(data);
+                })
+                .catch(error => {
+                  // eslint-disable-next-line
+                  console.log(error);
+                });
+              };
+            })(fileToUpload);
+            
+            reader.readAsArrayBuffer(fileToUpload);
+            this.$refs.filesToUpload.removeAllFiles()
+            var modal = document.getElementById("uploadModal");
+            modal.style.display = "none";
+            this.setMessage("", "")
+        }
+      } else {
+        //eslint-disable-next-line
+          this.setMessage("Please add a file", "message negative")
       }
-      var modal = document.getElementById("myModal");
-      modal.style.display = "none";
-      
-
   },
   downloadFile() {
     axios({
-      url: 'https://chat.lukeng.io:80/files/Individual/cjxtv7g2900zx0660h285bauk/cjxy5bk90040y0660taen844j',
+      url: 'https://chat.lukeng.io:80/files/Individual/cjxtv7g2900zx0660h285bauk/cjxy5bk90040y0660taen844j', // https://chat.lukeng.io/files/{Group,Individual}/{ChatID}/{FileID}
       method: 'GET',
-      responseType: 'blob', // important
+      responseType: 'blob', 
       headers: { Authorization: `Bearer ${this.token}` }
       
     }).then((response) => {
        const url = window.URL.createObjectURL(new Blob([response.data]));
        const link = document.createElement('a');
        link.href = url;
-       link.setAttribute('download', 'file.pdf'); //or any other extension
+       link.setAttribute('download', 'file.pdf'); //change 'file.pdf' to filename
        document.body.appendChild(link);
        link.click();
     });
+  },
+  setMessage(message, message_style) {
+      this.active_message = message;
+      this.active_message_style = message_style;
   },
   beforeDestroy() {
     clearInterval(this.refreshing);
