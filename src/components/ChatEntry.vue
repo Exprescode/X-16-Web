@@ -35,7 +35,7 @@ export default {
       );
     },
     owner: function() {
-      return this.converse.sender.email === this.$parent.master;
+      return this.converse.sender.email === this.$parent.master_email;
     },
     author: function() {
       return this.owner ? "You" : this.converse.sender.name;

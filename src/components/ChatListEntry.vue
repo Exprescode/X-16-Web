@@ -22,7 +22,7 @@ export default {
         return this.chat.name;
       }
       for (var i = 0; i < this.chat.members.length; i++) {
-        if (this.chat.members[i].email != this.$parent.master) {
+        if (this.chat.members[i].email != this.$parent.master_email) {
           return this.chat.members[i].name;
         }
       }
@@ -86,7 +86,7 @@ export default {
         variables: {
           chatId: this.chat.id,
           chatType: this.chat.__typename,
-          recipient: this.$parent.master
+          recipient: this.$parent.master_email
         }
       })
       .subscribe({
