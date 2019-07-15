@@ -39,7 +39,6 @@ export default {
   },
    methods: {
     reset() {
-                  /* eslint-disable */
       this.$recaptcha('login').then((token) => {
         const email = this.email;
         if (email === "") {
@@ -55,16 +54,16 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
-            window.sessionStorage.setItem("reset_email", this.email);
-
-            this.$router.replace({
-              name: "ResetPassword",
-              params: {
-                message: "Please check your email for the verification code!",
-                message_style: "message positive"
-              }
-            });
+            if (data.data.CheckUserExists == "User found") {
+              window.sessionStorage.setItem("reset_email", this.email);
+              this.$router.replace({
+                name: "ResetPassword",
+                params: {
+                  message: "Please check your email for the verification code!",
+                  message_style: "message positive"
+                }
+              });
+            }
           })
           .catch(error => {
             // eslint-disable-next-line
@@ -72,7 +71,6 @@ export default {
              var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {
-              console.log(gqlError[0].message)
               if (gqlError[0].message.includes("Captcha failed")) {
                  this.captcha_error = true
               } else if (gqlError[0].message.includes("query returned no result")) {

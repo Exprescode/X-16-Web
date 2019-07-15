@@ -115,8 +115,16 @@
             <img src="../assets/magnifying_glass.png">
           </button>
           <button v-on:click="sendMessage" id="send">SEND</button>
-          <!--<input type="file" v-on:change="uploadFile" ref="fileToUpload">-->
-          <!--<vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>-->
+          <button v-on:click="openModal('uploadModal')" id="upload">UPLOAD</button>
+          <button v-on:click="downloadFile" id="download">DOWNLOAD</button>
+          <div id="uploadModal" class="modal">
+            <div class="modal-content">
+              <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
+              <vue-dropzone ref="filesToUpload" id="dropzone" :options="dropzoneOptions"></vue-dropzone>
+              <br/>
+              <button v-on:click="uploadFile" id="upload">UPLOAD</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="placeholder" v-else>Please select a chat.</div>
@@ -126,9 +134,13 @@
 
 <script>
 import _ from "lodash";
+import axios from "axios";
 import ChatEntry from "@/components/ChatEntry.vue";
 import ChatListEntry from "@/components/ChatListEntry.vue";
 import PeopleListEntry from "@/components/PeopleListEntry.vue";
+import vue2Dropzone from 'vue2-dropzone'
+import 'vue2-dropzone/dist/vue2Dropzone.min.css'
+
 import {
   GET_INDIVIDUAL_CHATS,
   INDIVIDUAL_CHAT_SUB,
@@ -145,7 +157,8 @@ export default {
   components: {
     ChatEntry,
     ChatListEntry,
-    PeopleListEntry
+    PeopleListEntry,
+     vueDropzone: vue2Dropzone
   },
   created() {
     if (
@@ -153,7 +166,7 @@ export default {
       !window.sessionStorage.getItem("master_name") ||
       !window.sessionStorage.getItem("jwtToken")
     ) {
-      this.logoutUser();
+      this.logoutUser()
     }
 
     window.addEventListener("load", function() {
@@ -175,8 +188,6 @@ export default {
   watch: {
     search_users: function() {
       this.debouncedGetUsers();
-      // if (this.search_users.match(/^.+@.+\.+$/)) {
-      // }
     }
   },
   data() {
@@ -199,7 +210,13 @@ export default {
       new_user_name: "",
       new_password: "",
       refreshing: null,
-      fileToUpload: []
+      fileToUpload: [],
+      dropzoneOptions: {
+          url: 'https://httpbin.org/post',
+          addRemoveLinks: true,
+      },
+      active_message: this.message,
+      active_message_style: this.message_style
     };
   },
   apollo: {
@@ -271,7 +288,6 @@ export default {
         })
         .catch(error => {
           var gqlError = error.graphQLErrors;
-
           if (gqlError.length > 0) {
             if (gqlError[0].message.includes("Invalid token.")) {
               this.logoutUser();
@@ -372,8 +388,6 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          // console.log(data);
           this.users = data.data.GetUsers;
         })
         .catch(error => {
@@ -501,50 +515,95 @@ export default {
         {}
       );
     },
-    uploadFile() {
-      var fileToUpload = this.$refs.fileToUpload.files[0];
-      if (fileToUpload) {
-        // eslint-disable-next-line
-        console.log(fileToUpload);
-
-        var reader = new FileReader();
-
-        // Closure to capture the file information.
-        const scope = this;
-        reader.onload = (function(theFile) {
-          // eslint-disable-next-line
-          console.log(theFile);
-          return function(e) {
-            scope.$apollo
-              .mutate({
-                mutation: UPLOAD_FILE_MUTATION,
-                variables: {
-                  content: e.target.result,
-                  filename: fileToUpload,
-                  individualChatId: this.active_chat.id,
-                  groupChatId: "",
-                  token: scope.token
-                }
-              })
-              .then(data => {
-                // eslint-disable-next-line
-                console.log(data);
-              })
-              .catch(error => {
-                // eslint-disable-next-line
-                console.log(error);
-              });
-          };
-        })(fileToUpload);
-
-        // Read in the image file as a data URL.
-        reader.readAsText(fileToUpload);
+    openModal(modalId) {
+      var modal = document.getElementById(modalId);
+      modal.style.display = "block";
+      
+      
+      const scope = this
+      
+      window.onclick = function(event) {
+        if (event.target == modal) {
+          scope.setMessage("", "")
+          modal.style.display = "none";
+        }
       }
-      // Read in the image file as a data URL.
     },
-    beforeDestroy() {
-      clearInterval(this.refreshing);
-    }
+    uploadFile() {
+      var filesToUpload = this.$refs.filesToUpload.getAcceptedFiles()
+      
+      if (filesToUpload.length > 0) {
+        for (var i = 0; i < filesToUpload.length; ++i) {
+          var fileToUpload = filesToUpload[i]
+          var reader = new FileReader();
+  
+          const scope = this
+          reader.onload = (function() {
+              return function(e) {
+                var raw = e.target.result
+                
+                var rawBytes = new Uint8Array(raw);
+                var hex = [];
+                for (var cycle = 0 ; cycle < raw.byteLength ; cycle++) {
+                  hex.push(rawBytes[cycle]);
+                }
+                scope.$apollo
+                .mutate({
+                    mutation: UPLOAD_FILE_MUTATION,
+                    variables: {
+                      content: hex,
+                      filename: fileToUpload.name,
+                      filesize: fileToUpload.size,
+                      individualChatId: scope.active_chat.id,
+                      groupChatId: "",
+                      jwtToken: scope.token
+                    }
+                })
+                .then(data => {
+                  // eslint-disable-next-line
+                  console.log(data);
+                })
+                .catch(error => {
+                  // eslint-disable-next-line
+                  console.log(error);
+                });
+              };
+            })(fileToUpload);
+            
+            reader.readAsArrayBuffer(fileToUpload);
+            this.$refs.filesToUpload.removeAllFiles()
+            var modal = document.getElementById("uploadModal");
+            modal.style.display = "none";
+            this.setMessage("", "")
+        }
+      } else {
+        //eslint-disable-next-line
+          this.setMessage("Please add a file", "message negative")
+      }
+  },
+  downloadFile() {
+    axios({
+      url: 'https://chat.lukeng.io:80/files/Individual/cjxtv7g2900zx0660h285bauk/cjxy5bk90040y0660taen844j', // https://chat.lukeng.io/files/{Group,Individual}/{ChatID}/{FileID}
+      method: 'GET',
+      responseType: 'blob', 
+      headers: { Authorization: `Bearer ${this.token}` }
+      
+    }).then((response) => {
+       const url = window.URL.createObjectURL(new Blob([response.data]));
+       const link = document.createElement('a');
+       link.href = url;
+       link.setAttribute('download', 'file.pdf'); //change 'file.pdf' to filename
+       document.body.appendChild(link);
+       link.click();
+    });
+  },
+  setMessage(message, message_style) {
+      this.active_message = message;
+      this.active_message_style = message_style;
+  },
+  beforeDestroy() {
+    clearInterval(this.refreshing);
+  }
   }
 };
 </script>
@@ -1244,6 +1303,32 @@ export default {
   margin: 0 0 0 8px;
 }
 
+#right_panel #chat #compose #download {
+  border-style: none;
+  background-color: #3c95ff;
+  border-radius: 14px;
+  height: 28px;
+  font-family: "Roboto Light", sans-serif;
+  color: white;
+  text-align: center;
+  padding: 4px 8px 4px 8px;
+  box-sizing: border-box;
+  margin: 0 0 0 8px;
+}
+
+#right_panel #chat #compose #upload {
+  border-style: none;
+  background-color: #3c95ff;
+  border-radius: 14px;
+  height: 28px;
+  font-family: "Roboto Light", sans-serif;
+  color: white;
+  text-align: center;
+  padding: 4px 8px 4px 8px;
+  box-sizing: border-box;
+  margin: 0 0 0 8px;
+}
+
 #right_panel #chat #compose #search:hover,
 #right_panel #chat #compose #send:hover {
   background-color: #3c95ffe5;
@@ -1287,4 +1372,41 @@ export default {
     transform: rotate(360deg);
   }
 }
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 </style>

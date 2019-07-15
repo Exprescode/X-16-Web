@@ -73,6 +73,8 @@ export default {
   },
   methods: {
     getUser() {
+      
+      // this.$recaptcha('login').then((token) => 
       const email = this.email;
       const password = this.password;
       if (email === "" || password === "") {
@@ -111,17 +113,11 @@ export default {
             } else if (gqlError[0].message.includes("User not verified")) {
               this.$router.replace("/verify");
               window.sessionStorage.setItem("verify_email", this.email);
-            } else {
+            } else if (gqlError[0].message.includes("query returned no result")) {
               this.setMessage("Invalid email or password!", "message negative");
+            } else {
+              this.setMessage("An error occured, please try again!", "message negative");
             }
-          } else {
-            this.setMessage("An error occured", "message negative");
-          }
-          this.password = "";
-          // this.setMessage(
-          //   "Something went wrong. Please try again later.",
-          //   "message negative"
-          // );
         });
     },
     setMessage(message, message_style) {

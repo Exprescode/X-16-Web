@@ -1,14 +1,15 @@
 <template>
   <div id="entry">
     <div class="bubble" v-bind:class="tint">
-      <div class="author">{{author}}</div>
+      <div class="author">{{author}} </div>
       <div class="message">{{converse.message}}</div>
     </div>
     <div class="meta">
-      <!-- <div class="status">Delivered</div> -->
       <div class="timestamp">{{timestamp}}</div>
     </div>
+    <br/>
   </div>
+  
 </template>
 
 <script>
