@@ -60,9 +60,9 @@
             </div>
           </div>
         </div>
-        <div id="group_name">
-          <div id="label">Chat Name</div>
-          <input type="text" value="New Group">
+        <div id="group_name" v-show="active_chat && active_chat.__typename === 'GroupChat'">
+          <div class="label">Chat Name</div>
+          <input type="text" v-model="new_group_name">
         </div>
         <div id="user">
           <div id="profile">
@@ -81,10 +81,10 @@
           </div>
         </div>
         <button class="tick_cross">
-          <img src="img/tick.png">Done
+          <img src="../assets/tick.png">Done
         </button>
-        <button class="tick_cross">
-          <img src="img/cross_2.png">Cancel
+        <button class="tick_cross" v-on:click="setDrawerState('lobby')">
+          <img src="../assets/cross_2.png">Cancel
         </button>
       </div>
     </div>
@@ -163,6 +163,7 @@ export default {
   created() {
     if (
       !window.sessionStorage.getItem("master_email") ||
+      !window.sessionStorage.getItem("master_name") ||
       !window.sessionStorage.getItem("jwtToken")
     ) {
       this.logoutUser()
@@ -191,7 +192,8 @@ export default {
   },
   data() {
     return {
-      master: window.sessionStorage.getItem("master_email"),
+      master_email: window.sessionStorage.getItem("master_email"),
+      master_name: window.sessionStorage.getItem("master_name"),
       token: window.sessionStorage.getItem("jwtToken"),
       newToken: "",
       users: [],
@@ -204,6 +206,9 @@ export default {
       selected_users: [],
       search_chat_list: "",
       search_chat: false,
+      new_group_name: "",
+      new_user_name: "",
+      new_password: "",
       refreshing: null,
       fileToUpload: [],
       dropzoneOptions: {
@@ -219,7 +224,7 @@ export default {
       query: GET_INDIVIDUAL_CHATS,
       variables() {
         return {
-          email: this.master,
+          email: this.master_email,
           token: this.token
         };
       },
@@ -227,7 +232,7 @@ export default {
         document: INDIVIDUAL_CHAT_SUB,
         variables() {
           return {
-            email: this.master
+            email: this.master_email
           };
         },
         updateQuery: (previousResult, { subscriptionData }) => {
@@ -244,7 +249,7 @@ export default {
       query: GET_GROUP_CHATS,
       variables() {
         return {
-          email: this.master,
+          email: this.master_email,
           token: this.token
         };
       },
@@ -252,7 +257,7 @@ export default {
         document: GROUP_CHAT_SUB,
         variables() {
           return {
-            email: this.master
+            email: this.master_email
           };
         },
         updateQuery: (previousResult, { subscriptionData }) => {
@@ -273,7 +278,7 @@ export default {
         .mutate({
           mutation: REFRESH_TOKEN_MUTATION,
           variables: {
-            email: this.master,
+            email: this.master_email,
             token: this.token
           }
         })
@@ -296,7 +301,7 @@ export default {
           .mutate({
             mutation: REFRESH_TOKEN_MUTATION,
             variables: {
-              email: this.master,
+              email: this.master_email,
               token: this.token
             }
           })
@@ -326,13 +331,13 @@ export default {
           var a_name = "";
           var b_name = "";
           for (var i = 0; i < a.members.length; i++) {
-            if (a.members[i].email != this.master) {
+            if (a.members[i].email != this.master_email) {
               a_name = a.members[i].name;
               break;
             }
           }
           for (i = 0; i < b.members.length; i++) {
-            if (b.members[i].email != this.master) {
+            if (b.members[i].email != this.master_email) {
               b_name = b.members[i].name;
               break;
             }
@@ -353,6 +358,13 @@ export default {
       this.setScrollPosition();
     },
     setDrawerState(state) {
+      if (state === "settings") {
+        this.new_group_name =
+          this.active_chat && this.active_chat.__typename === "GroupChat"
+            ? this.active_chat.name
+            : "";
+        this.new_user_name = ""; //TODO: need to retirve current username here.
+      }
       this.drawer_state = state;
     },
     logoutUser() {
@@ -426,7 +438,7 @@ export default {
         .mutate({
           mutation: CREATE_CHAT,
           variables: {
-            creator: this.master,
+            creator: this.master_email,
             receipient: receipient,
             name: chat_name,
             token: this.token
@@ -472,7 +484,7 @@ export default {
         .mutate({
           mutation: SEND_MESSAGE,
           variables: {
-            sender: this.master,
+            sender: this.master_email,
             message: message,
             individualChatId: individual_chat_id,
             groupChatId: group_chat_id,
