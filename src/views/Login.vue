@@ -60,7 +60,7 @@ export default {
           "grecaptcha-badge"
         )[0].style.visibility = "collapse";
       }
-      this.$router.replace("/chat");
+      this.$router.replace("/app");
     }
   },
   data() {
@@ -91,7 +91,7 @@ export default {
         .then(data => {
           // eslint-disable-next-line
           console.log(data);
-          this.$router.replace("/chat");
+          this.$router.replace("/app");
           document.getElementsByClassName(
             "grecaptcha-badge"
           )[0].style.visibility = "collapse";

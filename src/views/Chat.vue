@@ -52,17 +52,33 @@
       </div>
       <div id="drawer_settings" v-show="drawer_state === 'settings'">
         <div id="people_list">
-          <div class="entry">
-            <div class="profile profile_red">H</div>
-            <div class="content">
-              <div class="name">Henry</div>
-              <div class="email">henry@sample.com</div>
-            </div>
-          </div>
+          <PeopleListEntry
+            v-for="user in users"
+            v-bind:user="user"
+            v-bind:key="user.id"
+            v-show="active_chat && active_chat.__typename === 'GroupChat'"
+          />
+        </div>
+        <div id="search" v-show="active_chat && active_chat.__typename === 'GroupChat'">
+          <input type="text" placeholder="Search" v-model="search_users" spellcheck="false">
+          <button v-on:click="search_users = ''">
+            <img src="../assets/cross.png" v-show="search_users&&!$apollo.loading">
+          </button>
+          <div v-show="$apollo.loading" class="loader"></div>
         </div>
         <div id="group_name" v-show="active_chat && active_chat.__typename === 'GroupChat'">
           <div class="label">Chat Name</div>
           <input type="text" v-model="new_group_name">
+        </div>
+        <div id="profile_counter" v-show="active_chat && active_chat.__typename === 'GroupChat'">
+          <div id="profile">
+            <div class="profile_blue" id="preview">S</div>
+            <button>EDIT</button>
+          </div>
+          <div id="counter">
+            <span>0</span>
+            <div>Members</div>
+          </div>
         </div>
         <div id="user">
           <div id="profile">
@@ -83,7 +99,7 @@
         <button class="tick_cross">
           <img src="../assets/tick.png">Done
         </button>
-        <button class="tick_cross" v-on:click="setDrawerState('lobby')">
+        <button class="tick_cross" v-on:click="cancelCreateChat">
           <img src="../assets/cross_2.png">Cancel
         </button>
       </div>
@@ -170,6 +186,14 @@ export default {
       Array.prototype.push.apply(list, this.GetIndividualChats);
       Array.prototype.push.apply(list, this.GetGroupChats);
       return list;
+    },
+    profile_chat: function() {
+      if (!this.active_chat || this.__typename != "GroupChat") {
+        return "";
+      }
+      return (
+        "profile profile_group " + this.getColorProfile(this.active_chat.id)
+      );
     }
   },
   watch: {
@@ -254,7 +278,6 @@ export default {
       }
     }
   },
-
   methods: {
     oneRefreshToken() {
       this.$apollo
@@ -341,13 +364,32 @@ export default {
       this.active_chat = chat;
       this.setScrollPosition();
     },
+    getColorProfile(id) {
+      var colors = [
+        "profile_red",
+        "profile_orange",
+        "profile_green",
+        "profile_blue",
+        "profile_indigo",
+        "profile_violet"
+      ];
+      return colors[id.charCodeAt(id.length - 1) % 6];
+    },
     setDrawerState(state) {
       if (state === "settings") {
-        this.new_group_name =
-          this.active_chat && this.active_chat.__typename === "GroupChat"
-            ? this.active_chat.name
-            : "";
-        this.new_user_name = ""; //TODO: need to retirve current username here.
+        if (this.active_chat) {
+          this.new_group_name =
+            this.active_chat.__typename === "GroupChat"
+              ? this.active_chat.name
+              : "";
+          for (var i = 0; i < this.active_chat.members.length; i++) {
+            if (this.active_chat.members.email != this.master_email) {
+              this.selected_users.push(this.active_chat.members[i]);
+            }
+          }
+          this.users = this.selected_users;
+        }
+        this.new_user_name = this.master_name;
       }
       this.drawer_state = state;
     },
@@ -388,15 +430,20 @@ export default {
           }
         });
     },
-    isSelectedUser(user) {
-      return this.selected_users.indexOf(user) > -1;
+    indexOfSelectedUser(user) {
+      for (var i = 0; i < this.selected_users.length; i++) {
+        if (this.selected_users[i].email === user.email) {
+          return i;
+        }
+      }
+      return -1;
     },
     addUser(user) {
       this.selected_users.push(user);
     },
     removeUser(user) {
-      var i = this.selected_users.indexOf(user);
-      if (i > -1) {
+      var i = this.indexOfSelectedUser(user);
+      if (i >= 0) {
         this.selected_users.splice(i, 1);
       }
     },
@@ -549,7 +596,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 #container {
   width: 100vw;
   height: 100vh;
@@ -833,7 +880,8 @@ export default {
   text-align: center;
 }
 
-#drawer_new_chat #search {
+#drawer_new_chat #search,
+#drawer_settings #search {
   width: 240px;
   margin: 4px 8px 8px 8px;
   padding: 8px;
@@ -845,7 +893,8 @@ export default {
   align-items: center;
 }
 
-#drawer_new_chat #search input {
+#drawer_new_chat #search input,
+#drawer_settings #search input {
   width: 100%;
   padding: 0;
   border-style: none;
@@ -855,7 +904,8 @@ export default {
   background-color: transparent;
 }
 
-#drawer_new_chat #search button {
+#drawer_new_chat #search button,
+#drawer_settings #search button {
   margin: 0 0 0 8px;
   padding: 0;
   border-style: none;
@@ -864,7 +914,8 @@ export default {
   width: 12px;
 }
 
-#drawer_new_chat #search button img {
+#drawer_new_chat #search button img,
+#drawer_settings #search button img {
   max-width: 100%;
   max-height: 100%;
   margin: 0;
@@ -972,6 +1023,35 @@ export default {
   margin: 0px;
 }
 
+#drawer_settings #profile_counter {
+  background-color: transparent;
+  display: flex;
+  flex-flow: row nowrap;
+  box-sizing: border-box;
+  padding: 8px;
+}
+
+#drawer_settings #profile_counter #counter {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  margin: 0 0 0 12px;
+}
+
+#drawer_settings #profile_counter #counter span {
+  font-family: "Roboto Medium", sans-serif;
+  color: #3c95ff;
+  font-size: 24px;
+  margin: 0 0 0 4px;
+}
+
+#drawer_settings #profile_counter #counter div {
+  color: #404040;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  margin: 0 0 0 4px;
+}
+
 #drawer_settings #user {
   background-color: transparent;
   display: flex;
@@ -980,11 +1060,13 @@ export default {
   padding: 8px;
 }
 
-#drawer_settings #user #profile {
+#drawer_settings #user #profile,
+#drawer_settings #profile_counter #profile {
   flex: none;
 }
 
-#drawer_settings #user #profile #preview {
+#drawer_settings #user #profile #preview,
+#drawer_settings #profile_counter #profile #preview {
   padding: 0;
   margin: 0;
   width: 50px;
@@ -998,7 +1080,8 @@ export default {
   font-size: 24px;
 }
 
-#drawer_settings #user #profile button {
+#drawer_settings #user #profile button,
+#drawer_settings #profile_counter #profile button {
   padding: 0;
   margin: 4px 0 0 0;
   width: 50px;
@@ -1012,7 +1095,8 @@ export default {
   background-color: #3c95ff;
 }
 
-#drawer_settings #user #profile button:hover {
+#drawer_settings #user #profile button:hover,
+#drawer_settings #profile_counter #profile button:hover {
   background-color: #3c95ffe5;
 }
 

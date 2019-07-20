@@ -100,6 +100,12 @@ export const CREATE_CHAT = gql`
   }
 `;
 
+export const DELETE_CHAT = gql`
+  mutation($id: String!, $chatType: String!, $token: String!) {
+    DeleteChat(id: $id, chatType: $chatType, jwtToken: $token)
+  }
+`;
+
 export const SEND_MESSAGE = gql`
   mutation(
     $sender: String!
@@ -115,6 +121,21 @@ export const SEND_MESSAGE = gql`
       groupChatId: $groupChatId
       jwtToken: $token
     )
+  }
+`;
+
+export const MESSAGE_SENT = gql`
+  subscription($chatId: String!, $chatType: String!, $recipient: String!) {
+    MessageSent(chatId: $chatId, chatType: $chatType, recipient: $recipient) {
+      id
+      sender {
+        id
+        email
+        name
+      }
+      datetime
+      message
+    }
   }
 `;
 
@@ -138,6 +159,22 @@ export const INDIVIDUAL_CHAT_SUB = gql`
         message
       }
     }
+  }
+`;
+
+export const CHANGE_PASSWORD = gql`
+  mutation(
+    $email: String!
+    $currentPassword: String!
+    $newPassword: String!
+    $token: String!
+  ) {
+    ChangePassword(
+      email: $email
+      currentPassword: $currentPassword
+      newPassword: $newPassword
+      jwtToken: $token
+    )
   }
 `;
 
@@ -248,5 +285,41 @@ export const GROUP_CHAT_SUB = gql`
         message
       }
     }
+  }
+`;
+
+export const CHANGE_GROUP_NAME = gql`
+  mutation($id: String!, $name: String!, $token: String!) {
+    ChangeGroupName(chatId: $id, name: $name, jwtToken: $token)
+  }
+`;
+
+export const ADD_GROUP_MEMBER = gql`
+  mutation($id: String!, $members: [String!], $token: String!) {
+    AddGroupMember(chatId: $id, members: $members, jwtToken: $token)
+  }
+`;
+
+export const KICK_GROUP_MEMBER = gql`
+  mutation($id: String!, $members: [String!], $token: String!) {
+    KickGroupMember(chatId: $id, members: $members, jwtToken: $token)
+  }
+`;
+
+export const KICK_GROUP_ADMIN = gql`
+  mutation($id: String!, $members: [String!], $token: String!) {
+    KickGroupAdmin(chatId: $id, members: $members, jwtToken: $token)
+  }
+`;
+
+export const PROMOTE_GROUP_MEMBER = gql`
+  mutation($id: String!, $members: [String!], $token: String!) {
+    PromoteGroupMember(chatId: $id, members: $members, jwtToken: $token)
+  }
+`;
+
+export const DEMOTE_GROUP_ADMIN = gql`
+  mutation($id: String!, $members: [String!], $token: String!) {
+    DemoteGroupAdmin(chatId: $id, members: $members, jwtToken: $token)
   }
 `;
