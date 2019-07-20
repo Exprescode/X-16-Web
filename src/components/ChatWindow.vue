@@ -18,11 +18,11 @@
           v-on:keyup.enter="sendMessage"
           spellcheck="false"
         >
-        <button v-show="search && message" v-on:click="search=''">
-          <img src="../assets/cross.png">
-        </button>
       </div>
-      <button id="search">
+      <button id="search" v-on:click="search=false" v-if="search">
+        <img src="../assets/cross_2_white.png">
+      </button>
+      <button id="search" v-on:click="search=true" v-else>
         <img src="../assets/magnifying_glass.png">
       </button>
       <button v-on:click="sendMessage" id="send">SEND</button>
@@ -66,11 +66,12 @@ export default {
   data() {
     return {
       message: "",
-      search: ""
+      search: false
     };
   },
   methods: {
     sendMessage() {
+      this.search = false;
       if (!this.message) {
         return;
       }

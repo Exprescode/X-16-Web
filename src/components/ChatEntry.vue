@@ -1,5 +1,5 @@
 <template>
-  <div v-bind:class="frame">
+  <div v-bind:class="frame" v-if="display">
     <div class="meta" v-show="owner">
       <!-- <div class="status">Delivered</div> -->
       <div class="timestamp">{{timestamp}}</div>
@@ -49,6 +49,13 @@ export default {
     },
     bubble: function() {
       return "bubble " + (this.owner ? "bubble_green" : "bubble_white");
+    },
+    display: function() {
+      return this.$parent.search
+        ? this.$parent.message
+          ? RegExp(this.$parent.message, "i").test(this.entry.message)
+          : true
+        : true;
     }
   }
 };
