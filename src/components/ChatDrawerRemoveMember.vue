@@ -70,62 +70,60 @@ export default {
     },
     selectDone() {
       this.error_msg = "";
-      var admins_email = [];
-      for (var i = 0; i < this.$parent.active_chat.admins.length; ++i) {
-        admins_email.push(this.$parent.active_chat.admins[i].email);
-      }
-      var members_email = [];
-      for (i = 0; i < this.$parent.active_chat.members.length; ++i) {
-        members_email.push(this.$parent.active_chat.members[i].email);
-      }
-      var selected_users_email = [];
-      for (i = 0; i < this.selected_users.length; ++i) {
-        selected_users_email.push(this.selected_users[i].email);
-      }
-      var rm_admins = selected_users_email.filter(x =>
+      var admins_email = this.$parent.active_chat.admins.map(x => x.email);
+      var members_email = this.$parent.active_chat.members.map(x => x.email);
+      var rm_admins = this.selected_users_email.filter(x =>
         admins_email.includes(x)
       );
-      var rm_members = selected_users_email.filter(x =>
+      var rm_members = this.selected_users_email.filter(x =>
         members_email.includes(x)
       );
-      this.$apollo
-        .mutate({
-          mutation: KICK_GROUP_ADMIN,
-          variables: {
-            id: this.$parent.active_chat.id,
-            members: rm_admins,
-            token: this.$parent.session_token
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.twoPassActive(true);
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          this.error_msg = "Kick Admin Error! Try Again Later.";
-        });
-      this.$apollo
-        .mutate({
-          mutation: KICK_GROUP_MEMBER,
-          variables: {
-            id: this.$parent.active_chat.id,
-            members: rm_members,
-            token: this.$parent.session_token
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.twoPassActive(true);
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          this.error_msg = "Kick Member Error! Try Again Later.";
-        });
+      if (rm_admins.length > 0) {
+        this.$apollo
+          .mutate({
+            mutation: KICK_GROUP_ADMIN,
+            variables: {
+              id: this.$parent.active_chat.id,
+              members: rm_admins,
+              token: this.$parent.session_token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+            this.twoPassActive(true);
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            this.error_msg = "Kick Admin Error! Try Again Later.";
+          });
+      } else {
+        this.twoPassActive(true);
+      }
+      if (rm_members.length > 0) {
+        this.$apollo
+          .mutate({
+            mutation: KICK_GROUP_MEMBER,
+            variables: {
+              id: this.$parent.active_chat.id,
+              members: rm_members,
+              token: this.$parent.session_token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+            this.twoPassActive(true);
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            this.error_msg = "Kick Member Error! Try Again Later.";
+          });
+      } else {
+        this.twoPassActive(true);
+      }
     },
     twoPassActive(pass) {
       if (pass) {

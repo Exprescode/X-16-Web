@@ -18,9 +18,9 @@
     <button v-on:click="selectDelete" v-show="!isGroup() || isGroupAdmin()">
       <img src="../assets/bin.png">Delete Chat
     </button>
-    <button v-on:click="selectLeave">
+    <!-- <button v-on:click="selectLeave">
       <img src="../assets/bin.png">Leave Chat
-    </button>
+    </button>-->
     <button v-on:click="selectClose">
       <img src="../assets/cross_2.png">Close
     </button>

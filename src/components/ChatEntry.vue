@@ -1,14 +1,14 @@
 <template>
-  <div v-bind:class="frame" v-if="display">
-    <div class="meta" v-show="owner">
+  <div v-bind:class="position" v-if="display">
+    <div class="meta" v-show="owner && !system">
       <!-- <div class="status">Delivered</div> -->
       <div class="timestamp">{{timestamp}}</div>
     </div>
     <div v-bind:class="bubble">
-      <div class="author">{{author}}</div>
-      <div class="message">{{entry.message}}</div>
+      <div class="author" v-if="!system">{{author}}</div>
+      <div v-bind:class="message_class">{{message}}</div>
     </div>
-    <div class="meta" v-show="!owner">
+    <div class="meta" v-show="!owner && !system">
       <!-- <div class="status">Delivered</div> -->
       <div class="timestamp">{{timestamp}}</div>
     </div>
@@ -41,11 +41,29 @@ export default {
     owner: function() {
       return this.entry.sender.email === this.$parent.$parent.master_email;
     },
-    frame: function() {
-      return "entry " + (this.owner ? "entry_right" : "entry_Left");
+    system: function() {
+      return this.entry.sender.email == "system";
+    },
+    position: function() {
+      return (
+        "entry " +
+        (this.system
+          ? "entry_center"
+          : this.owner
+          ? "entry_right"
+          : "entry_Left")
+      );
     },
     author: function() {
       return this.owner ? "You" : this.entry.sender.name;
+    },
+    message_class: function() {
+      return "message " + (this.system ? "message_center" : "");
+    },
+    message: function() {
+      return this.system
+        ? this.$parent.$parent.formatSystemMsg(this.entry.message)
+        : this.entry.message;
     },
     bubble: function() {
       return "bubble " + (this.owner ? "bubble_green" : "bubble_white");
@@ -80,6 +98,10 @@ export default {
   justify-content: flex-end;
 }
 
+.entry_center {
+  justify-content: center;
+}
+
 .bubble {
   border-radius: 8px;
   padding: 8px 12px 8px 8px;
@@ -107,6 +129,11 @@ export default {
   font-family: "Roboto Light", sans-serif;
   margin: 0;
   padding: 0;
+}
+
+.message_center {
+  text-align: center;
+  white-space: pre;
 }
 
 .meta {

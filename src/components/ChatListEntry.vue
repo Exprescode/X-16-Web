@@ -27,14 +27,20 @@ export default {
     initial: function() {
       return this.name.charAt(0).toUpperCase();
     },
-    message: function() {
-      return this.chat.messages.length > 0
-        ? this.chat.messages[this.chat.messages.length - 1].message
-        : "";
-    },
     sender: function() {
       return this.chat.messages.length > 0
-        ? this.chat.messages[this.chat.messages.length - 1].sender.name
+        ? this.chat.messages[this.chat.messages.length - 1].sender
+          ? this.chat.messages[this.chat.messages.length - 1].sender.name
+          : "System"
+        : "";
+    },
+    message: function() {
+      return this.chat.messages.length > 0
+        ? this.sender == "system"
+          ? this.$parent.$parent.formatSystemMsg(
+              this.chat.messages[this.chat.messages.length - 1].message
+            )
+          : this.chat.messages[this.chat.messages.length - 1].message
         : "";
     },
     filtered: function() {
@@ -64,6 +70,19 @@ export default {
             context.$parent.$parent.master_email
           ) {
             context.$parent.$parent.notifyPopup(data.data.MessageSent);
+          }
+          if (data.data.MessageSent.sender.email == "system") {
+            var json_obj = JSON.parse(data.data.MessageSent.message);
+            if (
+              json_obj.newName ||
+              json_obj.addedMembers ||
+              json_obj.kickedAdminNames ||
+              json_obj.kickedMemberNames ||
+              json_obj.promotedMembers ||
+              json_obj.demotedMembers
+            ) {
+              context.$parent.refresh(context.chat.__typename, context.chat.id);
+            }
           }
         },
         error(error) {

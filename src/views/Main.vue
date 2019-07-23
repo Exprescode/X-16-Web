@@ -212,6 +212,54 @@ export default {
     },
     resetLeftPanelActiveComponent() {
       this.left_panel_active_stack = ["NavBar"];
+    },
+    formatSystemMsg(json_text) {
+      var json_obj = JSON.parse(json_text);
+      var text = "Formatter Error!";
+      if (json_obj.newName) {
+        text = "New chat name: " + json_obj.newName;
+      } else if (json_obj.addedMembers) {
+        text =
+          "New member" +
+          (json_obj.addedMembers.length > 1 ? "s" : "") +
+          " joined the chat:";
+        for (const member of json_obj.addedMembers) {
+          text += "\n" + member;
+        }
+      } else if (json_obj.kickedAdminNames || json_obj.kickedMemberNames) {
+        var kicked_names_count =
+          (json_obj.kickedAdminNames ? json_obj.kickedAdminNames.length : 0) +
+          (json_obj.kickedMemberNames ? json_obj.kickedMemberNames.length : 0);
+        text =
+          "Member" + (kicked_names_count > 1 ? "s" : "") + " left the chat:";
+        if (json_obj.kickedAdminNames) {
+          for (const member of json_obj.kickedAdminNames) {
+            text += "\n" + member;
+          }
+        }
+        if (json_obj.kickedMemberNames) {
+          for (const member of json_obj.kickedMemberNames) {
+            text += "\n" + member;
+          }
+        }
+      } else if (json_obj.promotedMembers) {
+        text =
+          "Newly appointed admin" +
+          (json_obj.promotedMembers.length > 1 ? "s" : "") +
+          " :";
+        for (const member of json_obj.promotedMembers) {
+          text += "\n" + member;
+        }
+      } else if (json_obj.demotedMembers) {
+        text =
+          "Member" +
+          (json_obj.demotedMembers.length > 1 ? "s" : "") +
+          " removed from admin rights:";
+        for (const member of json_obj.demotedMembers) {
+          text += "\n" + member;
+        }
+      }
+      return text;
     }
   }
 };

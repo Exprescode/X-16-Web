@@ -7,7 +7,7 @@
         <span>{{error_msg}}</span>
       </div>
     </div>
-    <button class="button_field" v-on:click="selectDone">
+    <button class="button_field" v-on:click="selectDone" v-bind:disabled="!chat_name">
       <img src="../assets/tick.png">Done
     </button>
     <button class="button_field" v-on:click="selectCancel">
@@ -19,7 +19,7 @@
 <script>
 import { CHANGE_GROUP_NAME } from "@/graphql";
 export default {
-  name: "DrawerAccount",
+  name: "ChatDrawerName",
   data() {
     return {
       chat_name: this.$parent.active_chat.name,
@@ -29,8 +29,8 @@ export default {
   methods: {
     selectDone() {
       this.error_msg = "";
-      if (!this.chat_name) {
-        this.error_msg = "Name is empty!";
+      if (this.chat_name == this.$parent.active_chat.name) {
+        this.error_msg = "Same name?";
         return;
       }
       this.$apollo
@@ -61,6 +61,10 @@ export default {
 </script>
 
 <style scoped>
+button:disabled {
+  cursor: not-allowed;
+}
+
 #drawer {
   width: 100%;
   height: 100%;

@@ -56,9 +56,6 @@ export default {
     }
   },
   watch: {
-    chat: function() {
-      this.admin_rights = this.isAdmin();
-    },
     message_count: function() {
       this.debouncedSetScrollPosition();
     }

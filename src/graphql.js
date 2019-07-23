@@ -139,6 +139,12 @@ export const MESSAGE_SENT = gql`
   }
 `;
 
+export const UPDATE_MESSAGE_SENT = gql`
+  subscription($email: String!) {
+    UpdateMessageSent(email: $email)
+  }
+`;
+
 export const INDIVIDUAL_CHAT_SUB = gql`
   subscription($email: String!) {
     IndividualChatCreated(email: $email) {

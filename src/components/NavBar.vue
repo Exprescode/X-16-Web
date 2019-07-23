@@ -23,7 +23,8 @@ import {
   GET_INDIVIDUAL_CHATS,
   INDIVIDUAL_CHAT_SUB,
   GET_GROUP_CHATS,
-  GROUP_CHAT_SUB
+  GROUP_CHAT_SUB,
+  UPDATE_MESSAGE_SENT
 } from "@/graphql";
 export default {
   name: "NavBar",
@@ -39,7 +40,8 @@ export default {
     return {
       search: "",
       GetIndividualChats: [],
-      GetGroupChats: []
+      GetGroupChats: [],
+      refresh_active_chat: false
     };
   },
   apollo: {
@@ -50,6 +52,11 @@ export default {
           email: this.$parent.master_email,
           token: this.$parent.session_token
         };
+      },
+      result({ data, loading }) {
+        if (!loading && this.refresh_active_chat) {
+          this.refreshActiveChat(data.GetIndividualChats);
+        }
       },
       subscribeToMore: {
         document: INDIVIDUAL_CHAT_SUB,
@@ -76,6 +83,11 @@ export default {
           token: this.$parent.session_token
         };
       },
+      result({ data, loading }) {
+        if (!loading && this.refresh_active_chat) {
+          this.refreshActiveChat(data.GetGroupChats);
+        }
+      },
       subscribeToMore: {
         document: GROUP_CHAT_SUB,
         variables() {
@@ -94,9 +106,52 @@ export default {
       }
     }
   },
+  mounted() {
+    var context = this;
+    this.$apollo
+      .subscribe({
+        query: UPDATE_MESSAGE_SENT,
+        variables: {
+          email: this.$parent.master_email
+        }
+      })
+      .subscribe({
+        next(data) {
+          // eslint-disable-next-line
+          console.log(data);
+          var json_obj = JSON.parse(data.data.UpdateMessageSent);
+          if (json_obj.chatDeleted) {
+            context.refresh(
+              json_obj.chatDeleted.groupType,
+              json_obj.chatDeleted.chatId
+            );
+          }
+        },
+        error(error) {
+          // eslint-disable-next-line
+          console.log("Error code: 507698");
+          // eslint-disable-next-line
+          console.log(error);
+        }
+      });
+  },
   methods: {
     selectMenu() {
       this.$parent.addLeftPanelActiveComponent("DrawerMenu");
+    },
+    refreshActiveChat(chats) {
+      var chat_array = chats.filter(x => x.id == this.$parent.active_chat.id);
+      this.$parent.active_chat = chat_array.length > 0 ? chat_array[0] : "";
+      this.refresh_active_chat = false;
+    },
+    refresh(chat_type, chat_id) {
+      this.refresh_active_chat =
+        this.$parent.active_chat && this.$parent.active_chat.id == chat_id;
+      if (chat_type == "GroupChat") {
+        this.$apollo.queries.GetGroupChats.refetch();
+      } else {
+        this.$apollo.queries.GetIndividualChats.refetch();
+      }
     }
   }
 };
