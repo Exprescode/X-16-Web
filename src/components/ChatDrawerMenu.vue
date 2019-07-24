@@ -18,9 +18,9 @@
     <button v-on:click="selectDelete" v-show="!isGroup() || isGroupAdmin()">
       <img src="../assets/bin.png">Delete Chat
     </button>
-    <!-- <button v-on:click="selectLeave">
-      <img src="../assets/bin.png">Leave Chat
-    </button>-->
+    <button v-on:click="selectUpload">
+      <img src="../assets/upload.png">Upload Files
+    </button>
     <button v-on:click="selectClose">
       <img src="../assets/cross_2.png">Close
     </button>
@@ -86,7 +86,9 @@ export default {
           console.log(error);
         });
     },
-    selectLeave() {}
+    selectUpload() {
+      this.$parent.addLeftPanelActiveComponent("ChatDrawerUpload");
+    }
   }
 };
 </script>

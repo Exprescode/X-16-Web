@@ -242,25 +242,26 @@ export const REFRESH_TOKEN_MUTATION = gql`
   }
 `;
 
-export const UPLOAD_FILE_MUTATION = gql`
-  mutation UploadSingleFileMutation(
+export const UPLOAD_FILES = gql`
+  mutation(
     $filename: String!
     $filesize: Int!
-    $content: String!
+    $content: [Int!]!
     $individualChatId: String!
     $groupChatId: String!
-    $jwtToken: String!
+    $token: String!
   ) {
-    UploadSingleFile(
+    UploadFiles(
       filename: $filename
       filesize: $filesize
       content: $content
       individualChatId: $individualChatId
       groupChatId: $groupChatId
-      jwtToken: $jwtToken
+      jwtToken: $token
     ) {
       id
       filename
+      filesize
     }
   }
 `;

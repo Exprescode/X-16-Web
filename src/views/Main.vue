@@ -1,5 +1,8 @@
 <template>
   <div id="frame">
+    <div v-show="active_chat" style="visibility:hidden; opacity:0" id="dropzone">
+      <div id="textnode">Drop your files here.</div>
+    </div>
     <div id="left_panel">
       <NavBar v-show="left_panel_active_component == 'NavBar'" ref="NavBar"/>
       <DrawerMenu v-show="left_panel_active_component == 'DrawerMenu'"/>
@@ -32,6 +35,11 @@
         v-show="left_panel_active_component == 'ChatDrawerRemoveAdmin'"
         v-bind:key="key_chat_drawer_remove_admin"
       />
+      <ChatDrawerUpload
+        v-show="left_panel_active_component == 'ChatDrawerUpload'"
+        v-bind:key="key_chat_drawer_upload"
+        ref="chat_drawer_upload"
+      />
     </div>
     <div id="right_panel">
       <ChatWindow v-if="active_chat" v-bind:key="active_chat.id"/>
@@ -52,6 +60,7 @@ import ChatDrawerAddMember from "@/components/ChatDrawerAddMember.vue";
 import ChatDrawerRemoveMember from "@/components/ChatDrawerRemoveMember.vue";
 import ChatDrawerAddAdmin from "@/components/ChatDrawerAddAdmin.vue";
 import ChatDrawerRemoveAdmin from "@/components/ChatDrawerRemoveAdmin.vue";
+import ChatDrawerUpload from "@/components/ChatDrawerUpload.vue";
 import { GET_USERS, REFRESH_TOKEN_MUTATION } from "@/graphql";
 export default {
   name: "Main",
@@ -66,7 +75,8 @@ export default {
     ChatDrawerAddMember,
     ChatDrawerRemoveMember,
     ChatDrawerAddAdmin,
-    ChatDrawerRemoveAdmin
+    ChatDrawerRemoveAdmin,
+    ChatDrawerUpload
   },
   created() {
     if (
@@ -91,12 +101,47 @@ export default {
       ];
     }
   },
+  mounted() {
+    var context = this;
+    window.addEventListener("dragenter", function(e) {
+      e.preventDefault();
+      document.querySelector("#dropzone").style.visibility = "";
+      document.querySelector("#dropzone").style.opacity = 1;
+    });
+
+    window.addEventListener("dragleave", function(e) {
+      e.preventDefault();
+      document.querySelector("#dropzone").style.visibility = "hidden";
+      document.querySelector("#dropzone").style.opacity = 0;
+    });
+
+    window.addEventListener("dragover", function(e) {
+      e.preventDefault();
+      document.querySelector("#dropzone").style.visibility = "";
+      document.querySelector("#dropzone").style.opacity = 1;
+    });
+
+    window.addEventListener("drop", function(e) {
+      e.preventDefault();
+      document.querySelector("#dropzone").style.visibility = "hidden";
+      document.querySelector("#dropzone").style.opacity = 0;
+      if (context.active_chat) {
+        if (context.left_panel_active_component != "ChatDrawerUpload") {
+          context.addLeftPanelActiveComponent("ChatDrawerUpload");
+          context.upload_queue_buffer = e.dataTransfer.files;
+        } else {
+          context.$refs.chat_drawer_upload.enqueue_upload(e.dataTransfer.files);
+        }
+      }
+    });
+  },
   data() {
     return {
       master_user: "",
       master_email: window.sessionStorage.getItem("master_email"),
       session_token: window.sessionStorage.getItem("jwtToken"),
       active_chat: "",
+      refreshing: null,
       left_panel_active_stack: ["NavBar"],
       key_drawer_new_chat: Math.random(),
       key_drawer_account: Math.random(),
@@ -104,7 +149,9 @@ export default {
       key_chat_drawer_add_member: Math.random(),
       key_chat_drawer_remove_member: Math.random(),
       key_chat_drawer_add_admin: Math.random(),
-      key_chat_drawer_remove_admin: Math.random()
+      key_chat_drawer_remove_admin: Math.random(),
+      key_chat_drawer_upload: Math.random(),
+      upload_queue_buffer: []
     };
   },
   methods: {
@@ -202,6 +249,7 @@ export default {
       this.key_chat_drawer_remove_member = Math.random();
       this.key_chat_drawer_add_admin = Math.random();
       this.key_chat_drawer_remove_admin = Math.random();
+      this.key_chat_drawer_upload = Math.random();
     },
     addLeftPanelActiveComponent(component_name) {
       this.randomiseKey();
@@ -290,5 +338,26 @@ export default {
   justify-content: center;
   color: white;
   font-family: "Roboto", sans-serif;
+}
+#dropzone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999999999;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  transition: visibility 175ms, opacity 175ms;
+  display: table;
+  text-shadow: 1px 1px 2px #000;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  font: bold 42px Oswald, DejaVu Sans, Tahoma, sans-serif;
+}
+#textnode {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+  transition: font-size 175ms;
 }
 </style>
