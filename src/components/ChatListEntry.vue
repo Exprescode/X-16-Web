@@ -29,19 +29,39 @@ export default {
     },
     sender: function() {
       return this.chat.messages.length > 0
-        ? this.chat.messages[this.chat.messages.length - 1].sender
-          ? this.chat.messages[this.chat.messages.length - 1].sender.name
-          : "System"
+        ? this.chat.messages[this.chat.messages.length - 1].sender.name ==
+          "system"
+          ? "System"
+          : this.chat.messages[this.chat.messages.length - 1].sender.name
         : "";
     },
+    json: function() {
+      if (this.chat.messages.length > 0 && this.sender != "System") {
+        var msg = this.chat.messages[this.chat.messages.length - 1].message;
+        if (msg.charAt(0) == "{" && msg.charAt(msg.length - 1) == "}") {
+          try {
+            return JSON.parse(msg);
+          } catch (error) {
+            // eslint-disable-next-line
+            console.log(error);
+            return false;
+          }
+        }
+      }
+      return false;
+    },
     message: function() {
-      return this.chat.messages.length > 0
-        ? this.sender == "system"
-          ? this.$parent.$parent.formatSystemMsg(
-              this.chat.messages[this.chat.messages.length - 1].message
-            )
-          : this.chat.messages[this.chat.messages.length - 1].message
-        : "";
+      if (this.chat.messages.length > 0) {
+        var msg = this.chat.messages[this.chat.messages.length - 1].message;
+        if (this.sender == "System") {
+          return this.$parent.$parent.formatSystemMsg(msg);
+        } else if (this.json && this.json.download) {
+          return this.json.download.name;
+        } else {
+          return msg;
+        }
+      }
+      return "";
     },
     filtered: function() {
       return this.$parent.search

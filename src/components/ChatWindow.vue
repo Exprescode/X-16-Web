@@ -34,6 +34,7 @@
 
 <script>
 import _ from "lodash";
+import axios from "axios";
 import ChatEntry from "@/components/ChatEntry.vue";
 import { SEND_MESSAGE } from "@/graphql";
 export default {
@@ -113,6 +114,31 @@ export default {
       } else {
         this.$parent.addLeftPanelActiveComponent("ChatDrawerMenu");
       }
+    },
+    download(json) {
+      var chat_type =
+        this.$parent.active_chat.__typename == "IndividualChat"
+          ? "Individual"
+          : "Group";
+      axios({
+        url:
+          "https://chat.lukeng.io:80/files/" +
+          chat_type +
+          "/" +
+          this.$parent.active_chat.id +
+          "/" +
+          json.download.id, // https://chat.lukeng.io/files/{Group,Individual}/{ChatID}/{FileID}
+        method: "GET",
+        responseType: "blob",
+        headers: { Authorization: `Bearer ${this.$parent.session_token}` }
+      }).then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", json.download.name);
+        document.body.appendChild(link);
+        link.click();
+      });
     }
   }
 };

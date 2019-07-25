@@ -77,8 +77,8 @@ export default {
           ? this.$parent.active_chat.id
           : "";
       while (context.upload_queue.length > 0) {
-        var file = context.upload_queue.shift();
-        var reader = new FileReader();
+        const file = context.upload_queue.shift();
+        const reader = new FileReader();
         reader.onload = (function() {
           return function(e) {
             var raw = e.target.result;
