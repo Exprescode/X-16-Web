@@ -221,6 +221,7 @@ export default {
   font-family: "Roboto Light", sans-serif;
   margin: 0;
   padding: 0;
+  white-space: pre;
 }
 
 .message_center {

@@ -58,62 +58,66 @@ export default {
       this.email_error = false;
       this.connection_error = false;
       this.password_error = false;
-      this.captcha_error= false;
+      this.captcha_error = false;
     },
     addUser() {
-      this.$recaptcha('register').then((token) => {
-        this.clearError();
-        if (this.password != this.repassword) {
-          this.password_error = true;
-          return;
-        }
-        this.email_error = false;
-        this.connection_error = false;
-        const email = this.email;
-        const name = this.name;
-        const password = this.password;
-        this.$apollo
-          .mutate({
-            mutation: ADD_USER,
-            variables: {
-              email: email,
-              name: name,
-              password: password,
-              token: token
-            }
-          })
-          .then(data => {
+      // this.$recaptcha('register').then((token) => {
+      this.clearError();
+      if (this.password != this.repassword) {
+        this.password_error = true;
+        return;
+      }
+      this.email_error = false;
+      this.connection_error = false;
+      const email = this.email;
+      const name = this.name;
+      const password = this.password;
+      this.$apollo
+        .mutate({
+          mutation: ADD_USER,
+          variables: {
+            email: email,
+            name: name,
+            password: password,
+            // token: token
+            token: ""
+          }
+        })
+        .then(data => {
           /* eslint-disable */
-            console.log(data);
-            
-            window.sessionStorage.setItem("verify_email", this.email);
-            
-            this.$router.replace({
-              name: "Verify",
-              params: {
-                message: "Please check your email for the verification code!",
-                message_style: "message positive"
-              }
-            });
-          })
-          .catch(error => {
-            // eslint-disable-next-line
-            console.log(error);
-            var gqlError = error.graphQLErrors;
+          console.log(data);
 
-            if (gqlError.length > 0) {
-              if (gqlError[0].message.includes("Captcha failed")) {
-                  this.captcha_error = true
-              } else if (gqlError[0].message.includes("A unique constraint would be violated on User")) {
-                this.email_error = true
-              } 
-            } else {
-              this.connection_error = true
+          window.sessionStorage.setItem("verify_email", this.email);
+
+          this.$router.replace({
+            name: "Verify",
+            params: {
+              message: "Please check your email for the verification code!",
+              message_style: "message positive"
             }
-            
           });
         })
-    },
+        .catch(error => {
+          // eslint-disable-next-line
+          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+          if (gqlError.length > 0) {
+            if (gqlError[0].message.includes("Captcha failed")) {
+              this.captcha_error = true;
+            } else if (
+              gqlError[0].message.includes(
+                "A unique constraint would be violated on User"
+              )
+            ) {
+              this.email_error = true;
+            }
+          } else {
+            this.connection_error = true;
+          }
+        });
+      // })
+    }
   }
 };
 </script>

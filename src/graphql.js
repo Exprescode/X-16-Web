@@ -330,3 +330,37 @@ export const DEMOTE_GROUP_ADMIN = gql`
     DemoteGroupAdmin(chatId: $id, members: $members, jwtToken: $token)
   }
 `;
+
+export const CREATE_POLL = gql`
+  mutation(
+    $id: String!
+    $question: String!
+    $options: [String!]!
+    $token: String!
+  ) {
+    CreatePoll(
+      chatId: $id
+      question: $question
+      options: $options
+      jwtToken: $token
+    ) {
+      id
+    }
+  }
+`;
+
+export const VOTE_POLL = gql`
+  mutation($id: String!, $email: String!, $option: Int!, $token: String!) {
+    PollVote(groupId: $id, email: $email, option: $option, jwtToken: $token)
+  }
+`;
+
+export const GET_POLL = gql`
+  query($id: String!, $token: String!) {
+    GetPoll(chatId: $id, jwtToken: $token) {
+      question
+      options
+      answers
+    }
+  }
+`;

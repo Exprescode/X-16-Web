@@ -15,7 +15,7 @@
           type="text"
           placeholder="Compose message here."
           v-model="message"
-          v-on:keyup.enter="sendMessage"
+          v-on:keyup.enter="send"
           spellcheck="false"
         >
       </div>
@@ -25,9 +25,7 @@
       <button id="search" v-on:click="search=true" v-else>
         <img src="../assets/magnifying_glass.png">
       </button>
-      <button v-on:click="sendMessage" id="send">SEND</button>
-      <!--<input type="file" v-on:change="uploadFile" ref="fileToUpload">-->
-      <!--<vue-dropzone ref="myVueDropzone" id="dropzone" :options="dropzoneOptions"></vue-dropzone>-->
+      <button v-on:click="send()" id="send">SEND</button>
     </div>
   </div>
 </template>
@@ -36,7 +34,7 @@
 import _ from "lodash";
 import axios from "axios";
 import ChatEntry from "@/components/ChatEntry.vue";
-import { SEND_MESSAGE } from "@/graphql";
+import { SEND_MESSAGE, CREATE_POLL, VOTE_POLL, GET_POLL } from "@/graphql";
 export default {
   name: "ChatWindow",
   components: {
@@ -68,13 +66,125 @@ export default {
     };
   },
   methods: {
-    sendMessage() {
+    send() {
       this.search = false;
-      if (!this.message) {
-        return;
-      }
       const message = this.message;
       this.message = "";
+      if (!message) {
+        return;
+      } else if (
+        this.$parent.active_chat.__typename == "GroupChat" &&
+        message.charAt(0) == "@"
+      ) {
+        var params = message.split(" -");
+        var cmd_header = params.shift().split(" ");
+        var cmd = cmd_header.shift();
+        params = [...cmd_header, ...params];
+        if (cmd == "@poll") {
+          //eslint-disable-next-line
+          console.log(params);
+          this.cmd_poll(params);
+        } else {
+          this.sendMessage(message);
+        }
+      } else {
+        this.sendMessage(message);
+      }
+    },
+    cmd_poll(params) {
+      const context = this;
+      var fn = params.shift();
+      if (fn == "create" && params.length > 2) {
+        var qn = params.shift();
+        var msg_prep =
+          "A new poll has started!\n\nQuestion:\n" + qn + "\n\nOptions:";
+        for (var i = 0; i < params.length; ++i) {
+          msg_prep += "\n" + (i + 1) + ".\t" + params[i];
+        }
+        const msg = msg_prep;
+        this.$apollo
+          .mutate({
+            mutation: CREATE_POLL,
+            variables: {
+              id: this.chat.id,
+              question: qn,
+              options: params,
+              token: this.$parent.session_token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+            context.sendMessage(msg);
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            context.sendMessage("System error! Try again later.");
+          });
+      } else if (fn == "vote" && params.length > 0 && !isNaN(params[0])) {
+        this.$apollo
+          .mutate({
+            mutation: VOTE_POLL,
+            variables: {
+              id: this.chat.id,
+              email: this.$parent.master_email,
+              option: +params[0] - 1,
+              token: this.$parent.session_token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+            context.sendMessage("I have casted my vote!");
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            context.sendMessage("Invalid vote!");
+          });
+      } else if (fn == "result") {
+        this.$apollo
+          .query({
+            query: GET_POLL,
+            variables: {
+              id: this.chat.id,
+              token: this.$parent.session_token
+            }
+          })
+          .then(data => {
+            // eslint-disable-next-line
+            console.log(data);
+            var msg =
+              "This are the poll results!\n\nQuestion:\n" +
+              data.data.GetPoll.question +
+              "\n\nOptions/Results:";
+            for (var i = 0; i < data.data.GetPoll.options.length; ++i) {
+              msg +=
+                "\n" +
+                data.data.GetPoll.answers[i] +
+                " vote" +
+                (data.data.GetPoll.answers[i] > 1 ? "s" : "") +
+                ":\t" +
+                data.data.GetPoll.options[i];
+            }
+            context.sendMessage(msg);
+          })
+          .catch(error => {
+            // eslint-disable-next-line
+            console.log(error);
+            context.sendMessage("No existing poll!");
+          });
+      } else {
+        this.sendMessage(
+          "Invalid poll command!\nPoll command examples:\n@poll create -<QUESTION> -<OPTION 1> -<OPTION 2> [-<OPTION 3> ...]\n@poll vote <OPTION NUMBER>\n@poll result"
+        );
+      }
+    },
+    sendMessage(message) {
+      if (!message) {
+        return;
+      }
       var individual_chat_id =
         this.$parent.active_chat.__typename === "IndividualChat"
           ? this.$parent.active_chat.id
