@@ -1,17 +1,17 @@
 <template>
   <form id="form">
-    <div id="title">X-16</div>
+    <div id="title">
+      <router-link to="/" replace>
+        <a>X-16</a>
+      </router-link>
+    </div>
     <div id="subtitle">Fueled up and ready to fly!</div>
     <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
       <div class="label" autocomplete>VERIFICATION CODE</div>
-      <input
-        v-on:keyup.enter="verifyCode"
-        v-model="code"
-        required
-      >
+      <input v-on:keyup.enter="verifyCode" v-model="code" required>
     </div>
-  
+
     <div class="group">
       <button v-on:click="verifyCode">VERIFY</button>
     </div>
@@ -34,10 +34,10 @@ export default {
   },
   methods: {
     verifyCode() {
-      this.$recaptcha('verify').then((token) => {
+      this.$recaptcha("verify").then(token => {
         const email = this.email;
         const code = this.code;
-        if (code == "" ||  email == "") {
+        if (code == "" || email == "") {
           this.setMessage("Invalid code", "message negative");
           return;
         }
@@ -58,32 +58,33 @@ export default {
                   message: "User verified!",
                   message_style: "message positive"
                 }
-            });
+              });
               window.sessionStorage.removeItem("verify_email");
             }
           })
           .catch(error => {
             // eslint-disable-next-line
-            var gqlError = error.graphQLErrors
-            
+            var gqlError = error.graphQLErrors;
+
             if (gqlError.length > 0) {
               if (gqlError[0].message.includes("Captcha failed")) {
-                  this.setMessage("Captcha failed", "message negative");
+                this.setMessage("Captcha failed", "message negative");
               } else if (gqlError[0].message.includes("Token is invalid")) {
-                this.setMessage("Your verification code is invalid.", "message negative");
-                
-              }else {
+                this.setMessage(
+                  "Your verification code is invalid.",
+                  "message negative"
+                );
+              } else {
                 this.setMessage("An error occured", "message negative");
-              }  
+              }
             }
-        });
-      })
-    }
-   ,
+          });
+      });
+    },
     setMessage(message, message_style) {
       this.active_message = message;
       this.active_message_style = message_style;
-    },
+    }
   }
 };
 </script>

@@ -1,6 +1,10 @@
 <template>
   <form id="form">
-    <div id="title">X-16</div>
+    <div id="title">
+      <router-link to="/" replace>
+        <a>X-16</a>
+      </router-link>
+    </div>
     <div id="subtitle">Fueled up and ready to fly!</div>
     <div v-bind:class="active_message_style" v-if="active_message">{{active_message}}</div>
     <div class="group">
