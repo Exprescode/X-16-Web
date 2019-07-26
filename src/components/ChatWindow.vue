@@ -150,7 +150,8 @@ export default {
             variables: {
               id: this.chat.id,
               token: this.$parent.session_token
-            }
+            },
+            fetchPolicy: "no-cache"
           })
           .then(data => {
             // eslint-disable-next-line
