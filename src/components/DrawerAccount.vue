@@ -81,6 +81,7 @@ export default {
   },
   methods: {
     selectDone() {
+      /* eslint-disable */
       this.error_msg = "";
       if (!this.old_password || !this.new_password_1 || !this.new_password_2) {
         this.error_msg = "All fields are required!";
@@ -103,13 +104,17 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
           this.$parent.resetLeftPanelActiveComponent();
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
+
           this.error_msg = "Invalid old password!";
         });
     },

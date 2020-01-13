@@ -71,6 +71,7 @@ export default {
       ].map(x => x.email);
     },
     getUsers() {
+      /* eslint-disable */
       if (!this.search) {
         this.users = this.selected_users;
         return;
@@ -89,13 +90,11 @@ export default {
           );
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
           var gqlError = error.graphQLErrors;
 
           if (gqlError.length > 0) {
             if (gqlError[0].message.includes("Invalid token.")) {
-              this.logoutUser();
+              this.$parent.expireSession();
             }
           }
         });
@@ -126,19 +125,29 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
           this.$parent.resetLeftPanelActiveComponent();
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+               this.$parent.expireSession();
+              }
+            }
           this.error_msg = "Add member Error! Try again later.";
         });
     },
     selectCancel() {
       this.$parent.removeLeftPanelActiveComponent();
-    }
+    },
+    logoutUser() {
+      document.getElementsByClassName("grecaptcha-badge")[0].style.visibility =
+        "visible";
+      window.sessionStorage.removeItem("master_email");
+      window.sessionStorage.removeItem("jwtToken");
+      this.$router.replace("/");
+    },
   }
 };
 </script>

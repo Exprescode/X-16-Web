@@ -54,6 +54,8 @@ export default {
         };
       },
       result({ data, loading }) {
+        //eslint-disable-next-line
+        console.log("here?")
         if (!loading && this.refresh_active_chat) {
           this.refreshActiveChat(data.GetIndividualChats);
         }
@@ -107,6 +109,7 @@ export default {
     }
   },
   mounted() {
+    /* eslint-disable */
     var context = this;
     this.$apollo
       .subscribe({
@@ -117,8 +120,6 @@ export default {
       })
       .subscribe({
         next(data) {
-          // eslint-disable-next-line
-          console.log(data);
           var json_obj = JSON.parse(data.data.UpdateMessageSent);
           if (json_obj.chatDeleted) {
             context.refresh(
@@ -128,10 +129,6 @@ export default {
           }
         },
         error(error) {
-          // eslint-disable-next-line
-          console.log("Error code: 507698");
-          // eslint-disable-next-line
-          console.log(error);
         }
       });
   },

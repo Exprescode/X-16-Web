@@ -6,6 +6,7 @@
     <div class="menu_option">
       <span id="count">{{upload_queue.length}}</span> Files
     </div>
+ 
     <div class="menu_option" v-show="error_msg">
       <span id="error">{{error_msg}}</span>
     </div>
@@ -42,7 +43,8 @@ export default {
     return {
       error_msg: "",
       upload_queue: [],
-      upload_queue_names: []
+      upload_queue_names: [],
+      isUploading: false
     };
   },
   methods: {
@@ -62,11 +64,11 @@ export default {
       }
     },
     selectFile() {
-      // eslint-disable-next-line
-      console.log(this.$refs.file_selector.files);
       this.enqueue_upload(this.$refs.file_selector.files);
     },
     selectDone() {
+      /* eslint-disable */
+      this.isUploading = true
       const context = this;
       const individual_chat_id =
         this.$parent.active_chat.__typename === "IndividualChat"
@@ -100,8 +102,6 @@ export default {
                 }
               })
               .then(data => {
-                // eslint-disable-next-line
-                console.log(data);
                 var msg =
                   '{"download":{"id": "' +
                   data.data.UploadFiles.id +
@@ -116,10 +116,17 @@ export default {
                   individual_chat_id,
                   group_chat_id
                 );
+                this.isUploading = false
               })
               .catch(error => {
-                // eslint-disable-next-line
-                console.log(error);
+                var gqlError = error.graphQLErrors;
+    
+                if (gqlError.length > 0) {
+                  if (gqlError[0].message.includes("Invalid token.")) {
+                    this.$parent.expireSession();
+                  }
+                }
+
                 context.sendMessage(
                   context,
                   "File upload failed! (" + file.name + ")",
@@ -149,14 +156,19 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
+
+          this.error_msg = "Unable to send message! Try Again Later.";
         });
-    }
+    },
   }
 };
 </script>

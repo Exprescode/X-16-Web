@@ -63,6 +63,7 @@ export default {
       }
     },
     selectDone() {
+      /* eslint-disable */
       this.error_msg = "";
       this.$apollo
         .mutate({
@@ -74,13 +75,16 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
           this.$parent.resetLeftPanelActiveComponent();
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
           this.error_msg = "Promote Error! Try Again Later.";
         });
     },

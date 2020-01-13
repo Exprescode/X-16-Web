@@ -116,6 +116,7 @@ export default {
       }
     },
     selectCreate() {
+      /* eslint-disable */
       this.error_msg = "";
       var name =
         this.selected_users.length > 1
@@ -134,15 +135,19 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
           if (data.data.CreateChat == "Chat Created") {
             this.$parent.resetLeftPanelActiveComponent();
           }
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
+
           this.error_msg = "Create Chat Error! Try Again Later.";
         });
     },

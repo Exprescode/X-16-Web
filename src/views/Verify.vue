@@ -1,5 +1,5 @@
 <template>
-  <form id="form">
+  <div id="form">
     <div id="title">
       <router-link to="/" replace>
         <a>X-16</a>
@@ -15,7 +15,7 @@
     <div class="group">
       <button v-on:click="verifyCode">VERIFY</button>
     </div>
-  </form>
+  </div>
 </template>
 
 <script>
@@ -63,7 +63,6 @@ export default {
             }
           })
           .catch(error => {
-            // eslint-disable-next-line
             var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {

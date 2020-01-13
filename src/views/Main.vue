@@ -168,12 +168,10 @@ export default {
           this.master_user = data.data.GetUsers[0];
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
           var gqlError = error.graphQLErrors;
           if (gqlError.length > 0) {
             if (gqlError[0].message.includes("Invalid token.")) {
-              this.logoutUser();
+              this.expireSession();
             }
           }
         });
@@ -183,16 +181,56 @@ export default {
         "visible";
       window.sessionStorage.removeItem("master_email");
       window.sessionStorage.removeItem("jwtToken");
+      window.sessionStorage.removeItem("master_name");
+      window.sessionStorage.removeItem("reset_email");
+      window.sessionStorage.removeItem("verify_email");
+      
       this.$router.replace("/");
     },
+    expireSession() {
+      document.getElementsByClassName("grecaptcha-badge")[0].style.visibility =
+        "visible";
+      window.sessionStorage.removeItem("master_email");
+      window.sessionStorage.removeItem("jwtToken");
+      window.sessionStorage.removeItem("master_name");
+      window.sessionStorage.removeItem("reset_email");
+      window.sessionStorage.removeItem("verify_email");
+       this.$router.replace({
+              name: "Login",
+              params: {
+                message: "You have an invalid session, please login again.",
+                message_style: "message negative"
+              }
+            });
+    },
     notifyPopup(fullMessage) {
-      this.$notification.show(
-        fullMessage.sender.name,
-        {
-          body: fullMessage.message
-        },
-        {}
-      );
+      var messageToSend = ""
+      var sender = ""
+      
+      if (fullMessage.sender.name != "system") {
+        try {
+          var output = JSON.parse(fullMessage.message);
+          if (output["download"]) {
+            messageToSend = output["download"].name + " has been uploaded."
+          } 
+        } catch(e) {
+          messageToSend = fullMessage.message
+        }
+        
+        if (fullMessage.groupChatName) {
+          sender = fullMessage.sender.name + " (" + fullMessage.groupChatName + ")"
+        } else {
+          sender = fullMessage.sender.name
+        }
+        
+        this.$notification.show(
+          sender,
+          {
+            body: messageToSend
+          },
+          {}
+        );
+      }
     },
     oneRefreshToken() {
       this.$apollo
@@ -206,13 +244,14 @@ export default {
         .then(data => {
           // eslint-disable-next-line
           window.sessionStorage.setItem("jwtToken", data.data.RefreshToken);
+          this.session_token =window.sessionStorage.getItem("jwtToken");
         })
         .catch(error => {
           var gqlError = error.graphQLErrors;
 
           if (gqlError.length > 0) {
             if (gqlError[0].message.includes("Invalid token.")) {
-              this.logoutUser();
+              this.expireSession();
             }
           }
         });
@@ -224,22 +263,23 @@ export default {
             mutation: REFRESH_TOKEN_MUTATION,
             variables: {
               email: this.master_email,
-              token: this.token
+              token: this.session_token
             }
           })
           .then(data => {
             window.sessionStorage.setItem("jwtToken", data.data.RefreshToken);
+            this.session_token =window.sessionStorage.getItem("jwtToken");
           })
           .catch(error => {
             var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {
               if (gqlError[0].message.includes("Invalid token.")) {
-                this.logoutUser();
+                this.expireSession();
               }
             }
           });
-      }, 480000);
+      }, 840000);
     },
     randomiseKey() {
       this.key_drawer_new_chat = Math.random();

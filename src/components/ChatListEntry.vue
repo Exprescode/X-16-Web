@@ -42,8 +42,6 @@ export default {
           try {
             return JSON.parse(msg);
           } catch (error) {
-            // eslint-disable-next-line
-            console.log(error);
             return false;
           }
         }
@@ -70,6 +68,7 @@ export default {
     }
   },
   mounted() {
+    /* eslint-disable */
     var context = this;
     this.$apollo
       .subscribe({
@@ -82,8 +81,6 @@ export default {
       })
       .subscribe({
         next(data) {
-          // eslint-disable-next-line
-          console.log(data);
           context.chat.messages.push(data.data.MessageSent);
           if (
             data.data.MessageSent.sender.email !=
@@ -106,10 +103,6 @@ export default {
           }
         },
         error(error) {
-          // eslint-disable-next-line
-          console.log("Error code: 507698");
-          // eslint-disable-next-line
-          console.log(error);
         }
       });
   },

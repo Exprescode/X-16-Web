@@ -83,8 +83,6 @@ export default {
         try {
           return JSON.parse(this.entry.message);
         } catch (error) {
-          // eslint-disable-next-line
-          console.log(error);
           return false;
         }
       }

@@ -76,14 +76,17 @@ export default {
             token: this.$parent.session_token
           }
         })
+        //eslint-disable-next-line
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
           this.$parent.resetLeftPanelActiveComponent();
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+        var gqlError = error.graphQLErrors;
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
         });
     },
     selectUpload() {

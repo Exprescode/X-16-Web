@@ -41,6 +41,7 @@ export default {
   },
   methods: {
     initUsers() {
+            /* eslint-disable */
       if (
         !this.$parent.active_chat ||
         this.$parent.active_chat.__typename != "GroupChat"
@@ -89,13 +90,16 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
-            console.log(data);
             this.twoPassActive(true);
           })
           .catch(error => {
-            // eslint-disable-next-line
-            console.log(error);
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
             this.error_msg = "Kick Admin Error! Try Again Later.";
           });
       } else {
@@ -112,13 +116,17 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
-            console.log(data);
             this.twoPassActive(true);
           })
           .catch(error => {
-            // eslint-disable-next-line
-            console.log(error);
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+               this.$parent.expireSession();
+              }
+            }
+
             this.error_msg = "Kick Member Error! Try Again Later.";
           });
       } else {

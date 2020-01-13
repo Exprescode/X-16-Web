@@ -135,6 +135,7 @@ export const MESSAGE_SENT = gql`
       }
       datetime
       message
+      groupChatName
     }
   }
 `;

@@ -1,5 +1,5 @@
 <template>
-  <form id="form">
+  <div id="form">
     <div id="title">
       <router-link to="/" replace>
         <a>X-16</a>
@@ -21,13 +21,13 @@
     </div>
     <div class="group">
       <div class="label">CONFIRM PASSWORD</div>
-      <input type="password" v-model="repassword" required>
+      <input type="password" v-model="repassword"  v-on:keyup.enter="resetPassword" required>
     </div>
   
     <div class="group">
       <button v-on:click="resetPassword">RESET</button>
     </div>
-  </form>
+  </div>
 </template>
 
 <script>
@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     resetPassword() {
-      this.$recaptcha('verify').then((token) => {
+      this.$recaptcha('reset').then((token) => {
         const email = this.email;
         const password = this.password;
         const repassword = this.repassword;
@@ -86,8 +86,6 @@ export default {
             }
           })
           .catch(error => {
-            // eslint-disable-next-line
-            console.log(error)
             var gqlError = error.graphQLErrors
             
             if (gqlError.length > 0) {
@@ -97,7 +95,7 @@ export default {
                 this.setMessage("Your verification code is invalid.", "message negative");
                 
               }else {
-                this.setMessage("An error occured", "message negative");
+                this.setMessage("An error occured, please try again", "message negative");
               }  
             }
         });

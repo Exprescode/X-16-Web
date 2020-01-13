@@ -40,7 +40,7 @@ export default {
    methods: {
     reset() {
                   /* eslint-disable */
-      this.$recaptcha('login').then((token) => {
+      this.$recaptcha('reset').then((token) => {
         const email = this.email;
         if (email === "") {
           this.setMessage("Please type in an email", "message negative");
@@ -55,7 +55,6 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
             window.sessionStorage.setItem("reset_email", this.email);
 
             this.$router.replace({
@@ -67,8 +66,6 @@ export default {
             });
           })
           .catch(error => {
-            // eslint-disable-next-line
-              console.log(error)
              var gqlError = error.graphQLErrors;
 
             if (gqlError.length > 0) {

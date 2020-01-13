@@ -12,7 +12,8 @@ import store from './store'
 import VueNativeNotification from 'vue-native-notification'
 import { VueReCaptcha } from 'vue-recaptcha-v3'
 import { createUploadLink } from 'apollo-upload-client'
-
+import VueSpinners from 'vue-spinners'
+ 
 
 Vue.config.productionTip = false;
 
@@ -51,6 +52,7 @@ Vue.use(VueApollo);
 Vue.use(VueNativeNotification, {
   requestOnNotify: true
 })
+Vue.use(VueSpinners)
 
 Vue.use(VueReCaptcha, { siteKey: '6LcvfqwUAAAAAJgEnl3tX8LQpdTli0XwYjCJyChV' })
 

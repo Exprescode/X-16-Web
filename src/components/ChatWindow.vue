@@ -41,6 +41,7 @@ export default {
     ChatEntry
   },
   created() {
+          /* eslint-disable */
     this.debouncedSetScrollPosition = _.debounce(this.setScrollPosition, 100);
   },
   mounted: function() {
@@ -81,8 +82,6 @@ export default {
         var cmd = cmd_header.shift();
         params = [...cmd_header, ...params];
         if (cmd == "@poll") {
-          //eslint-disable-next-line
-          console.log(params);
           this.cmd_poll(params);
         } else {
           this.sendMessage(message);
@@ -113,13 +112,17 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
-            console.log(data);
             context.sendMessage(msg);
           })
           .catch(error => {
-            // eslint-disable-next-line
-            console.log(error);
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
+
             context.sendMessage("System error! Try again later.");
           });
       } else if (fn == "vote" && params.length > 0 && !isNaN(params[0])) {
@@ -134,13 +137,17 @@ export default {
             }
           })
           .then(data => {
-            // eslint-disable-next-line
-            console.log(data);
             context.sendMessage("I have casted my vote!");
           })
           .catch(error => {
-            // eslint-disable-next-line
-            console.log(error);
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
+
             context.sendMessage("Invalid vote!");
           });
       } else if (fn == "result") {
@@ -154,8 +161,6 @@ export default {
             fetchPolicy: "no-cache"
           })
           .then(data => {
-            // eslint-disable-next-line
-            console.log(data);
             var msg =
               "This are the poll results!\n\nQuestion:\n" +
               data.data.GetPoll.question +
@@ -172,8 +177,14 @@ export default {
             context.sendMessage(msg);
           })
           .catch(error => {
-            // eslint-disable-next-line
-            console.log(error);
+            var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.$parent.expireSession();
+              }
+            }
+
             context.sendMessage("No existing poll!");
           });
       } else {
@@ -206,12 +217,16 @@ export default {
           }
         })
         .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
         })
         .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
+          var gqlError = error.graphQLErrors;
+
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Invalid token.")) {
+                this.logoutUser();
+              }
+            }
+
         });
     },
     setScrollPosition() {
@@ -238,7 +253,7 @@ export default {
           "/" +
           this.$parent.active_chat.id +
           "/" +
-          json.download.id, // https://chat.lukeng.io/files/{Group,Individual}/{ChatID}/{FileID}
+          json.download.id, 
         method: "GET",
         responseType: "blob",
         headers: { Authorization: `Bearer ${this.$parent.session_token}` }
@@ -250,7 +265,14 @@ export default {
         document.body.appendChild(link);
         link.click();
       });
-    }
+    },
+     logoutUser() {
+      document.getElementsByClassName("grecaptcha-badge")[0].style.visibility =
+        "visible";
+      window.sessionStorage.removeItem("master_email");
+      window.sessionStorage.removeItem("jwtToken");
+      this.$router.replace("/");
+    },
   }
 };
 </script>

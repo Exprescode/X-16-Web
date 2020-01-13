@@ -29,7 +29,7 @@
     </div>
     <div class="group">
       <div class="label">CONFIRM PASSWORD</div>
-      <input type="password" v-model="repassword" required>
+      <input type="password" v-model="repassword" v-on:keyup.enter="addUser" required>
     </div>
     <div class="group">
       <button v-on:click="addUser">REGISTER</button>
@@ -61,62 +61,58 @@ export default {
       this.captcha_error = false;
     },
     addUser() {
-      // this.$recaptcha('register').then((token) => {
-      this.clearError();
-      if (this.password != this.repassword) {
-        this.password_error = true;
-        return;
-      }
-      this.email_error = false;
-      this.connection_error = false;
-      const email = this.email;
-      const name = this.name;
-      const password = this.password;
-      this.$apollo
-        .mutate({
-          mutation: ADD_USER,
-          variables: {
-            email: email,
-            name: name,
-            password: password,
-            // token: token
-            token: ""
-          }
-        })
-        .then(data => {
-          /* eslint-disable */
-          console.log(data);
-
-          window.sessionStorage.setItem("verify_email", this.email);
-
-          this.$router.replace({
-            name: "Verify",
-            params: {
-              message: "Please check your email for the verification code!",
-              message_style: "message positive"
+      /* eslint-disable */
+      this.$recaptcha('register').then((token) => {
+        this.clearError();
+        if (this.password != this.repassword) {
+          this.password_error = true;
+          return;
+        }
+        this.email_error = false;
+        this.connection_error = false;
+        const email = this.email;
+        const name = this.name;
+        const password = this.password;
+        this.$apollo
+          .mutate({
+            mutation: ADD_USER,
+            variables: {
+              email: email,
+              name: name,
+              password: password,
+              token: token
+            }
+          })
+          
+          .then(data => {
+            window.sessionStorage.setItem("verify_email", this.email);
+  
+            this.$router.replace({
+              name: "Verify",
+              params: {
+                message: "Please check your email for the verification code!",
+                message_style: "message positive"
+              }
+            });
+          })
+          .catch(error => {
+            var gqlError = error.graphQLErrors;
+  
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Captcha failed")) {
+                this.captcha_error = true;
+              } else if (
+                gqlError[0].message.includes(
+                  "A unique constraint would be violated on User"
+                )
+              ) {
+                this.email_error = true;
+              }
+            } else {
+              this.connection_error = true;
             }
           });
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          var gqlError = error.graphQLErrors;
-
-          if (gqlError.length > 0) {
-            if (gqlError[0].message.includes("Captcha failed")) {
-              this.captcha_error = true;
-            } else if (
-              gqlError[0].message.includes(
-                "A unique constraint would be violated on User"
-              )
-            ) {
-              this.email_error = true;
-            }
-          } else {
-            this.connection_error = true;
-          }
-        });
-      // })
+      })
     }
   }
 };

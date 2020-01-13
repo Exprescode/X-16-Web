@@ -73,56 +73,50 @@ export default {
   },
   methods: {
     getUser() {
-      const email = this.email;
-      const password = this.password;
-      if (email === "" || password === "") {
-        this.setMessage("Invalid email or password!", "message negative");
-        return;
-      }
-      this.$apollo
-        .query({
-          query: GET_USER,
-          variables: {
-            email: email,
-            password: password,
-            token: "" // TODO: Token variable goes here.
-          }
-        })
-        .then(data => {
-          // eslint-disable-next-line
-          console.log(data);
-          this.$router.replace("/app");
-          document.getElementsByClassName(
-            "grecaptcha-badge"
-          )[0].style.visibility = "collapse";
-          window.sessionStorage.setItem("master_email", this.email);
-          var user = data.data.GetUser.split(" ");
-          window.sessionStorage.setItem("jwtToken", user[0]);
-          window.sessionStorage.setItem("master_name", user[1]);
-        })
-        .catch(error => {
-          // eslint-disable-next-line
-          console.log(error);
-          var gqlError = error.graphQLErrors;
-
-          if (gqlError.length > 0) {
-            if (gqlError[0].message.includes("Captcha failed")) {
-              this.setMessage("Captcha failed", "message negative");
-            } else if (gqlError[0].message.includes("User not verified")) {
-              this.$router.replace("/verify");
-              window.sessionStorage.setItem("verify_email", this.email);
-            } else {
-              this.setMessage("Invalid email or password!", "message negative");
+      this.$recaptcha('login').then((token) => {
+        const email = this.email;
+        const password = this.password;
+        if (email === "" || password === "") {
+          this.setMessage("Invalid email or password!", "message negative");
+          return;
+        }
+        this.$apollo
+          .query({
+            query: GET_USER,
+            variables: {
+              email: email,
+              password: password,
+              token: token 
             }
-          } else {
-            this.setMessage("An error occured", "message negative");
-          }
-          this.password = "";
-          // this.setMessage(
-          //   "Something went wrong. Please try again later.",
-          //   "message negative"
-          // );
-        });
+          })
+          .then(data => {
+            this.$router.replace("/app");
+            document.getElementsByClassName(
+              "grecaptcha-badge"
+            )[0].style.visibility = "collapse";
+            window.sessionStorage.setItem("master_email", this.email);
+            var user = data.data.GetUser.split(" ");
+            window.sessionStorage.setItem("jwtToken", user[0]);
+            window.sessionStorage.setItem("master_name", user[1]);
+          })
+          .catch(error => {
+            var gqlError = error.graphQLErrors;
+  
+            if (gqlError.length > 0) {
+              if (gqlError[0].message.includes("Captcha failed")) {
+                this.setMessage("Captcha failed", "message negative");
+              } else if (gqlError[0].message.includes("User not verified")) {
+                this.$router.replace("/verify");
+                window.sessionStorage.setItem("verify_email", this.email);
+              } else {
+                this.setMessage("Invalid email or password!", "message negative");
+              }
+            } else {
+              this.setMessage("An error occured", "message negative");
+            }
+            this.password = "";
+          });
+      })
     },
     setMessage(message, message_style) {
       this.active_message = message;
