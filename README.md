@@ -1,4 +1,6 @@
-# x-16
+# X-16
+## Description
+This is a NUS Orbital project at Project Gemini (intermediate) level achievement.
 
 ## Project setup
 ```
