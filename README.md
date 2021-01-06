@@ -1,6 +1,9 @@
 # X-16
-## Description
-This is a NUS Orbital project at Project Gemini (intermediate) level achievement.
+This a web based messaging application developed for the purpose of education under the NUS Orbital programme at Project Gemini (intermediate) level achievement. The application is a recreation of popular messaging applications like Whatsapp and Telegram to explore the technologies required to support such services.
+
+
+
+This repository only contains the application's frontend and will require a backend to operate correctly.
 
 ## Project setup
 ```
